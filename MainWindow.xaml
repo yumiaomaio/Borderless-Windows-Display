@@ -1,0 +1,34 @@
+<Window x:Class="BorderlessWindowApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="显示器设置工具" Height="380" Width="480"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical" Margin="0 0 0 10">
+            <TextBlock Text="显示器：" FontWeight="Bold"/>
+            <ComboBox x:Name="displayCombo" Width="300" SelectionChanged="displayCombo_SelectionChanged"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Grid.Row="1" Margin="0 0 0 10">
+            <TextBlock Text="分辨率 @ 刷新率：" FontWeight="Bold"/>
+            <ComboBox x:Name="resolutionCombo" Width="300"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Grid.Row="2" Margin="0 0 0 10">
+            <TextBlock Text="DPI 缩放：" FontWeight="Bold"/>
+            <ComboBox x:Name="dpiCombo" Width="300"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0 10 0 0">
+            <Button Content="应用设置" Width="100" Click="ApplyButton_Click" Margin="0 0 10 0"/>
+            <Button Content="回退原始" Width="100" Click="RevertButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
