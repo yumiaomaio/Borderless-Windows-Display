@@ -3,7 +3,7 @@ using BorderlessWindowApp.Interop.Structs;
 
 namespace BorderlessWindowApp.Interop
 {
-    public static class DisplayConfigApi
+    public static class NativeDisplayApi
     {
         [DllImport("user32.dll")]
         public static extern int GetDisplayConfigBufferSizes(uint flags, out uint numPathArrayElements, out uint numModeInfoArrayElements);

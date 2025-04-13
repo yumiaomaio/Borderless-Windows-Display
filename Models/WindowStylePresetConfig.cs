@@ -1,13 +1,34 @@
-﻿using BorderlessWindowApp.Interop.Enums;
+﻿using System.Text.Json.Serialization;
+using BorderlessWindowApp.Interop.Enums;
 
 namespace BorderlessWindowApp.Models
 {
-    public record WindowStylePresetConfig(
-        WindowStyles Style,
-        WindowExStyles ExStyle,
-        string Description,
-        bool AlwaysTopmost = false,
-        bool AllowResize = true,
-        double? Transparency = null
-    );
+    public class WindowStylePresetConfig
+    {
+        public WindowStyles Style { get; set; }
+        public WindowExStyles ExStyle { get; set; }
+        public string Description { get; set; }
+        public bool AlwaysTopmost { get; set; }
+        public bool AllowResize { get; set; }
+        public double? Transparency { get; set; }
+
+        [JsonConstructor]
+        public WindowStylePresetConfig() { }
+
+        public WindowStylePresetConfig(
+            WindowStyles style,
+            WindowExStyles exStyle,
+            string description,
+            bool alwaysTopmost = false,
+            bool allowResize = true,
+            double? transparency = null)
+        {
+            Style = style;
+            ExStyle = exStyle;
+            Description = description;
+            AlwaysTopmost = alwaysTopmost;
+            AllowResize = allowResize;
+            Transparency = transparency;
+        }
+    }
 }

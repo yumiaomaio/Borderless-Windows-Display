@@ -10,13 +10,13 @@ public static class DisplayHelper
         paths = new();
         modes = new();
 
-        if (DisplayConfigApi.GetDisplayConfigBufferSizes(flags, out uint numPaths, out uint numModes) != 0)
+        if (NativeDisplayApi.GetDisplayConfigBufferSizes(flags, out uint numPaths, out uint numModes) != 0)
             return false;
 
         var pathArray = new DISPLAYCONFIG_PATH_INFO[numPaths];
         var modeArray = new DISPLAYCONFIG_MODE_INFO[numModes];
 
-        if (DisplayConfigApi.QueryDisplayConfig(flags, ref numPaths, pathArray, ref numModes, modeArray, IntPtr.Zero) != 0)
+        if (NativeDisplayApi.QueryDisplayConfig(flags, ref numPaths, pathArray, ref numModes, modeArray, IntPtr.Zero) != 0)
             return false;
 
         paths.AddRange(pathArray);

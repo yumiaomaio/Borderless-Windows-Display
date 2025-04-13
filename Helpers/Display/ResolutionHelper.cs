@@ -13,7 +13,7 @@ namespace BorderlessWindowApp.Helpers.Display
             DEVMODE devMode = new() { dmSize = (ushort)Marshal.SizeOf(typeof(DEVMODE)) };
             int modeIndex = 0;
 
-            while (DisplayConfigApi.EnumDisplaySettings(deviceName, modeIndex, ref devMode))
+            while (NativeDisplayApi.EnumDisplaySettings(deviceName, modeIndex, ref devMode))
             {
                 modes.Add(( (int)devMode.dmPelsWidth, (int)devMode.dmPelsHeight, (int)devMode.dmDisplayFrequency ));
                 modeIndex++;
@@ -29,7 +29,7 @@ namespace BorderlessWindowApp.Helpers.Display
             d.cb = Marshal.SizeOf(d);
 
             uint devNum = 0;
-            while (DisplayConfigApi.EnumDisplayDevices(null, devNum++, ref d, 0))
+            while (NativeDisplayApi.EnumDisplayDevices(null, devNum++, ref d, 0))
             {
                 if ((d.StateFlags & 0x00000001) != 0) // DISPLAY_DEVICE_ACTIVE
                 {
@@ -55,7 +55,7 @@ namespace BorderlessWindowApp.Helpers.Display
                 dmFields = (uint)(DEVMODEFields.PelsWidth | DEVMODEFields.PelsHeight | DEVMODEFields.DisplayFrequency)
             };
 
-            var result = DisplayConfigApi.ChangeDisplaySettingsEx(deviceName, ref devMode, IntPtr.Zero, 0x01, IntPtr.Zero); // CDS_UPDATEREGISTRY
+            var result = NativeDisplayApi.ChangeDisplaySettingsEx(deviceName, ref devMode, IntPtr.Zero, 0x01, IntPtr.Zero); // CDS_UPDATEREGISTRY
             Console.WriteLine($"ChangeDisplaySettingsEx 返回值: {result}");
             return result == 0;
         }
@@ -65,7 +65,7 @@ namespace BorderlessWindowApp.Helpers.Display
             DEVMODE devMode = new() { dmSize = (ushort)Marshal.SizeOf(typeof(DEVMODE)) };
             const int ENUM_CURRENT_SETTINGS = -1;
 
-            if (DisplayConfigApi.EnumDisplaySettings(deviceName, ENUM_CURRENT_SETTINGS, ref devMode))
+            if (NativeDisplayApi.EnumDisplaySettings(deviceName, ENUM_CURRENT_SETTINGS, ref devMode))
             {
                 return ((int)devMode.dmPelsWidth, (int)devMode.dmPelsHeight, (int)devMode.dmDisplayFrequency);
             }

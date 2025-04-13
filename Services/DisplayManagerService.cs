@@ -137,7 +137,7 @@ namespace BorderlessWindowApp.Services
                     mode.modeInfo.targetMode.targetVideoSignalInfo = signal;
                     modes[i] = mode;
 
-                    return Interop.DisplayConfigApi.SetDisplayConfig(
+                    return Interop.NativeDisplayApi.SetDisplayConfig(
                         (uint)paths.Count,
                         paths.ToArray(),
                         (uint)modes.Count,

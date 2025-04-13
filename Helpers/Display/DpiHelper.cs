@@ -31,7 +31,7 @@ namespace BorderlessWindowApp.Helpers.Display
                 }
             };
 
-            int result = DisplayConfigApi.DisplayConfigGetDeviceInfo(ref header);
+            int result = NativeDisplayApi.DisplayConfigGetDeviceInfo(ref header);
             if (result != 0) return new DpiScalingInfo();
 
             int offset = Math.Abs(header.minScaleRel);
@@ -72,7 +72,7 @@ namespace BorderlessWindowApp.Helpers.Display
                 scaleRel = relative
             };
 
-            return DisplayConfigApi.DisplayConfigSetDeviceInfo(ref setHeader) == 0;
+            return NativeDisplayApi.DisplayConfigSetDeviceInfo(ref setHeader) == 0;
         }
     }
 }

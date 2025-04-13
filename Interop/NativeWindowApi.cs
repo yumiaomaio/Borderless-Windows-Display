@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop.Structs;
 using BorderlessWindowApp.Interop.Delegates;
@@ -6,7 +6,7 @@ using BorderlessWindowApp.Interop.Enums;
 
 namespace BorderlessWindowApp.Interop
 {
-    public static class Win32WindowApi
+    public static class NativeWindowApi
     {
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
@@ -84,5 +84,21 @@ namespace BorderlessWindowApp.Interop
             uint crKey,
             byte bAlpha,
             uint dwFlags);
+        
+        [DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool BringWindowToTop(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern bool IsWindow(IntPtr hWnd);
+
     }
 }
