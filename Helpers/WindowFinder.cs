@@ -12,12 +12,12 @@ namespace BorderlessWindowApp.Helpers
         {
             IntPtr result = IntPtr.Zero;
 
-            NativeApi.EnumWindows((hWnd, lParam) =>
+            Win32WindowApi.EnumWindows((hWnd, lParam) =>
             {
-                if (!NativeApi.IsWindowVisible(hWnd)) return true;
+                if (!Win32WindowApi.IsWindowVisible(hWnd)) return true;
 
                 var sb = new StringBuilder(256);
-                NativeApi.GetWindowText(hWnd, sb, sb.Capacity);
+                Win32WindowApi.GetWindowText(hWnd, sb, sb.Capacity);
 
                 if (sb.ToString().Contains(title, StringComparison.OrdinalIgnoreCase))
                 {
@@ -36,23 +36,27 @@ namespace BorderlessWindowApp.Helpers
         /// </summary>
         public static List<string> GetAllVisibleTitles()
         {
-            var titles = new List<string>();
+            List<string> titles = new();
 
-            NativeApi.EnumWindows((hWnd, lParam) =>
+            Win32WindowApi.EnumWindows((hWnd, lParam) =>
             {
-                if (!NativeApi.IsWindowVisible(hWnd)) return true;
+                if (!Win32WindowApi.IsWindowVisible(hWnd))
+                    return true;
 
-                var sb = new StringBuilder(256);
-                NativeApi.GetWindowText(hWnd, sb, sb.Capacity);
+                var sb = new System.Text.StringBuilder(256);
+                Win32WindowApi.GetWindowText(hWnd, sb, sb.Capacity);
+
                 string title = sb.ToString();
-
                 if (!string.IsNullOrWhiteSpace(title))
+                {
                     titles.Add(title);
+                }
 
                 return true;
             }, IntPtr.Zero);
 
             return titles;
         }
+
     }
 }

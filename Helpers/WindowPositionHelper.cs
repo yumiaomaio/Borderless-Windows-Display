@@ -26,7 +26,7 @@ namespace BorderlessWindowApp.Helpers
         /// </summary>
         public static bool SetWindowRect(IntPtr hWnd, Rectangle rect, SetWindowPosFlags flags)
         {
-            return NativeApi.SetWindowPos(hWnd, IntPtr.Zero,
+            return Win32WindowApi.SetWindowPos(hWnd, IntPtr.Zero,
                 rect.X, rect.Y, rect.Width, rect.Height, (uint)flags);
         }
 
@@ -43,22 +43,30 @@ namespace BorderlessWindowApp.Helpers
         /// <summary>
         /// 将窗口居中到当前屏幕（默认使用工作区）
         /// </summary>
-        public static bool CenterToScreen(IntPtr hWnd, bool excludeTaskbar = true)
+        public static void CenterWindowToScreen(IntPtr hWnd)
         {
-            var windowRect = WindowSizeHelper.GetWindowRect(hWnd);
-            if (windowRect.IsEmpty) return false;
+            if (hWnd == IntPtr.Zero)
+                return;
 
-            Rectangle screenArea = excludeTaskbar
-                ? WindowSizeHelper.GetWorkingArea(hWnd)
-                : WindowSizeHelper.GetScreenBounds(hWnd);
+            // 获取窗口大小
+            Rectangle windowRect = WindowSizeHelper.GetWindowRect(hWnd);
+            int winWidth = windowRect.Width;
+            int winHeight = windowRect.Height;
 
-            if (screenArea.IsEmpty) return false;
+            // 获取当前窗口所在屏幕的工作区
+            Rectangle workArea = ScreenHelper.GetWorkAreaFromWindow(hWnd);
 
-            int x = screenArea.X + (screenArea.Width - windowRect.Width) / 2;
-            int y = screenArea.Y + (screenArea.Height - windowRect.Height) / 2;
+            int x = workArea.X + (workArea.Width - winWidth) / 2;
+            int y = workArea.Y + (workArea.Height - winHeight) / 2;
 
-            return SetWindowRect(hWnd, new Rectangle(x, y, windowRect.Width, windowRect.Height),
-                SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOOWNERZORDER | SetWindowPosFlags.SWP_SHOWWINDOW);
+            Win32WindowApi.SetWindowPos(
+                hWnd,
+                IntPtr.Zero,
+                x, y, 0, 0,
+                (uint)(
+                    SetWindowPosFlags.SWP_NOSIZE |
+                    SetWindowPosFlags.SWP_NOZORDER |
+                    SetWindowPosFlags.SWP_NOACTIVATE));
         }
         
     }

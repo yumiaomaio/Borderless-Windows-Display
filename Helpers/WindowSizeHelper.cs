@@ -1,67 +1,80 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
+using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Enums;
+using BorderlessWindowApp.Interop.Structs;
 
 namespace BorderlessWindowApp.Helpers
 {
     public static class WindowSizeHelper
     {
-        private const uint MONITOR_DEFAULTTONEAREST = 2;
-
         public static Rectangle GetWindowRect(IntPtr hWnd)
         {
-            return NativeApi.GetWindowRect(hWnd, out var rect) ? rect.ToRectangle() : Rectangle.Empty;
+            if (!Win32WindowApi.GetWindowRect(hWnd, out RECT rect))
+                return Rectangle.Empty;
+
+            return new Rectangle(
+                rect.Left,
+                rect.Top,
+                rect.Right - rect.Left,
+                rect.Bottom - rect.Top);
         }
 
-        public static Rectangle GetWorkingArea(IntPtr hWnd)
+        public static Size GetSize(IntPtr hWnd)
         {
-            IntPtr monitor = NativeApi.MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
-            var info = new NativeApi.MONITORINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf<NativeApi.MONITORINFO>() };
-
-            return NativeApi.GetMonitorInfo(monitor, ref info) ? info.rcWork.ToRectangle() : Rectangle.Empty;
+            var r = GetWindowRect(hWnd);
+            return new Size(r.Width, r.Height);
         }
 
-        public static Rectangle GetScreenBounds(IntPtr hWnd)
+        public static Rectangle GetClientRect(IntPtr hWnd)
         {
-            IntPtr monitor = NativeApi.MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
-            var info = new NativeApi.MONITORINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf<NativeApi.MONITORINFO>() };
+            if (!Win32WindowApi.GetClientRect(hWnd, out RECT client))
+                return Rectangle.Empty;
 
-            return NativeApi.GetMonitorInfo(monitor, ref info) ? info.rcMonitor.ToRectangle() : Rectangle.Empty;
+            return new Rectangle(
+                client.Left,
+                client.Top,
+                client.Right - client.Left,
+                client.Bottom - client.Top);
         }
 
-        public static bool SetClientSize(IntPtr hWnd, int clientWidth, int clientHeight, bool centerOnScreen = false)
+        public static void SetWindowRect(IntPtr hWnd, Rectangle rect)
         {
-            if (hWnd == IntPtr.Zero || !NativeApi.GetWindowRect(hWnd, out var currentRect)) return false;
+            Win32WindowApi.SetWindowPos(
+                hWnd,
+                IntPtr.Zero,
+                rect.X, rect.Y,
+                rect.Width, rect.Height,
+                (uint)(SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_FRAMECHANGED));
+        }
 
-            int style = NativeApi.GetWindowLong(hWnd, NativeApi.GWL_STYLE);
-            int exStyle = NativeApi.GetWindowLong(hWnd, NativeApi.GWL_EXSTYLE);
+        public static void SetClientSize(IntPtr hWnd, int width, int height, bool centerOnScreen = false)
+        {
+            // 获取当前窗口样式
+            var style = Win32WindowApi.GetWindowLong(hWnd, -16);     // GWL_STYLE
+            var exStyle = Win32WindowApi.GetWindowLong(hWnd, -20);   // GWL_EXSTYLE
 
-            var adjustedRect = new NativeApi.RECT
-            {
-                Left = 0,
-                Top = 0,
-                Right = clientWidth,
-                Bottom = clientHeight
-            };
+            var rect = new RECT { Left = 0, Top = 0, Right = width, Bottom = height };
+            Win32WindowApi.AdjustWindowRectEx(ref rect, (uint)style, false, (uint)exStyle);
 
-            if (!NativeApi.AdjustWindowRectEx(ref adjustedRect, (uint)style, false, (uint)exStyle))
-                return false;
+            int finalWidth = rect.Right - rect.Left;
+            int finalHeight = rect.Bottom - rect.Top;
 
-            int newWidth = adjustedRect.Right - adjustedRect.Left;
-            int newHeight = adjustedRect.Bottom - adjustedRect.Top;
-
-            int x = currentRect.Left;
-            int y = currentRect.Top;
-
+            int x = 100, y = 100; // 默认位置
             if (centerOnScreen)
             {
-                Rectangle screen = GetWorkingArea(hWnd);
-                x = screen.X + (screen.Width - newWidth) / 2;
-                y = screen.Y + (screen.Height - newHeight) / 2;
+                var screen = System.Windows.SystemParameters.WorkArea;
+                x = (int)(screen.Width / 2 - finalWidth / 2);
+                y = (int)(screen.Height / 2 - finalHeight / 2);
             }
 
-            return NativeApi.SetWindowPos(hWnd, IntPtr.Zero, x, y, newWidth, newHeight,
-                (uint)(SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOOWNERZORDER | SetWindowPosFlags.SWP_SHOWWINDOW));
+            Win32WindowApi.SetWindowPos(
+                hWnd,
+                IntPtr.Zero,
+                x, y,
+                finalWidth, finalHeight,
+                (uint)(SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_FRAMECHANGED));
         }
     }
 }

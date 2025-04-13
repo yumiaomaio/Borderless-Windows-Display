@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop;
+using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Interop.Structs;
 
 namespace BorderlessWindowApp.Helpers
@@ -46,17 +47,19 @@ namespace BorderlessWindowApp.Helpers
 
         public static bool TryChangeResolution(string deviceName, int width, int height, int frequency)
         {
+            
+            
             var devMode = new DEVMODE
             {
                 dmSize = (ushort)Marshal.SizeOf(typeof(DEVMODE)),
                 dmPelsWidth = (uint)width,
                 dmPelsHeight = (uint)height,
                 dmDisplayFrequency = (uint)frequency,
-                dmFields = 0x180000 // DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY
+                dmFields = (uint)(DEVMODEFields.PelsWidth | DEVMODEFields.PelsHeight | DEVMODEFields.DisplayFrequency)
             };
 
             var result = DisplayConfigApi.ChangeDisplaySettingsEx(deviceName, ref devMode, IntPtr.Zero, 0x01, IntPtr.Zero); // CDS_UPDATEREGISTRY
-            
+            Console.WriteLine($"ChangeDisplaySettingsEx 返回值: {result}");
             return result == 0;
         }
         

@@ -38,3 +38,4 @@ C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\BorderlessWindowApp.g.resources
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\BorderlessWindowApp.genruntimeconfig.cache
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\ref\BorderlessWindowApp.dll
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\BorderlessWindowApp.sourcelink.json
