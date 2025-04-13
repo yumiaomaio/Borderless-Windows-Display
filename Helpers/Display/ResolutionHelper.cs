@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Interop.Structs;
 
-namespace BorderlessWindowApp.Helpers
+namespace BorderlessWindowApp.Helpers.Display
 {
     public static class ResolutionHelper
     {

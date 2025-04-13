@@ -1,13 +1,11 @@
-﻿using System;
-using System.Drawing;
-using System.Windows;
-using System.Windows.Interop;
+﻿using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Windows;
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Interop.Structs;
 
-namespace BorderlessWindowApp.Helpers
+namespace BorderlessWindowApp.Helpers.Window
 {
     public static class ScreenHelper
     {

@@ -2,7 +2,7 @@
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Enums;
 
-namespace BorderlessWindowApp.Helpers
+namespace BorderlessWindowApp.Helpers.Window
 {
     public static class WindowPositionHelper
     {

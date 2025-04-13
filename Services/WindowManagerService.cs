@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using BorderlessWindowApp.Helpers;
+using BorderlessWindowApp.Helpers.Window;
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Models;
@@ -103,4 +104,5 @@ namespace BorderlessWindowApp.Services
                 Win32WindowApi.ShowWindow(hWnd, (int)ShowWindowCommand.Restore);
         }
     }
+    
 }

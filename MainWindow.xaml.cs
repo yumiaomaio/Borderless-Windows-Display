@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using BorderlessWindowApp.Helpers;
+using BorderlessWindowApp.Helpers.Window;
 using BorderlessWindowApp.Services;
 using BorderlessWindowApp.Interop.Enums;
 
@@ -12,6 +13,7 @@ namespace BorderlessWindowApp
     {
         private readonly WindowManagerService _manager = new();
         private IntPtr _targetHwnd = IntPtr.Zero;
+        private readonly WindowMonitorService _monitor = new();
 
         public MainWindow()
         {
@@ -20,6 +22,23 @@ namespace BorderlessWindowApp
             LoadStyleList();
         }
 
+        private void Monitor()
+        {
+
+            _monitor.OnMovedOrResized += (hWnd, rect) =>
+            {
+                Log($"📦 大小/位置变更: {rect.Width}x{rect.Height} @ ({rect.X},{rect.Y})");
+            };
+
+            _monitor.OnMinimized += hWnd => Log("📉 最小化");
+            _monitor.OnRestored += hWnd => Log("🧼 恢复显示");
+            _monitor.OnShown += hWnd => Log("✅ 显示");
+            _monitor.OnHidden += hWnd => Log("❌ 隐藏");
+
+            _monitor.Start(_targetHwnd);
+
+        }
+        
         private void LoadWindowList()
         {
             WindowComboBox.ItemsSource = _manager.GetAllVisibleWindowTitles();
@@ -47,6 +66,8 @@ namespace BorderlessWindowApp
             _manager.ApplyStyle(_targetHwnd, preset);
             _manager.CenterWindow(_targetHwnd);
             Log($"✅ 应用了样式：{preset} 到窗口：{title}");
+
+            Monitor();
         }
 
         private void Restore_Click(object sender, RoutedEventArgs e)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BorderlessWindowApp.Helpers;
+using BorderlessWindowApp.Helpers.Display;
 using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Interop.Structs;
 

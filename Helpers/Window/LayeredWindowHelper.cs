@@ -1,8 +1,6 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using BorderlessWindowApp.Interop;
+﻿using BorderlessWindowApp.Interop;
 
-namespace BorderlessWindowApp.Helpers
+namespace BorderlessWindowApp.Helpers.Window
 {
     public static class LayeredWindowHelper
     {

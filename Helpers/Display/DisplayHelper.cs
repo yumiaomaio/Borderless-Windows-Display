@@ -1,6 +1,8 @@
 ﻿using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Structs;
 
+namespace BorderlessWindowApp.Helpers.Display;
+
 public static class DisplayHelper
 {
     public static bool QueryDisplayPathsAndModes(out List<DISPLAYCONFIG_PATH_INFO> paths, out List<DISPLAYCONFIG_MODE_INFO> modes, uint flags = 0x00000001)

@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using BorderlessWindowApp.Interop;
 
-namespace BorderlessWindowApp.Helpers
+namespace BorderlessWindowApp.Helpers.Window
 {
     public static class WindowFinder
     {

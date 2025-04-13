@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using BorderlessWindowApp.Interop;
+﻿using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Delegates;
 using BorderlessWindowApp.Interop.Enums;
 
-namespace BorderlessWindowApp.Helpers
+namespace BorderlessWindowApp.Helpers.Window
 {
     public static class WindowHookHelper
     {
