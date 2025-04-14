@@ -1,86 +1,95 @@
 ﻿using System;
-using System.Drawing;
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Enums;
-using BorderlessWindowApp.Services.Window;
-using BorderlessWindowApp.Services.WindowLayout;
-using BorderlessWindowApp.Services.WindowStyle;
+using BorderlessWindowApp.Interop.Enums.Window;
+using Microsoft.Extensions.Logging;
 
 namespace BorderlessWindowApp.Services
 {
     public class WindowManagerService : IWindowManagerService
     {
-        private readonly IWindowQueryService _query;
-        private readonly IWindowStyleManager _style;
-        private readonly IWindowLayoutService _layout;
-        private readonly IWindowHookService _hook;
+        private readonly ILogger<WindowManagerService> _logger;
 
-        private IntPtr? _managedWindow;
-
-        public WindowManagerService(
-            IWindowQueryService query,
-            IWindowStyleManager style,
-            IWindowLayoutService layout,
-            IWindowHookService hook)
+        public WindowManagerService(ILogger<WindowManagerService> logger)
         {
-            _query = query;
-            _style = style;
-            _layout = layout;
-            _hook = hook;
+            _logger = logger;
         }
 
-        public void InitWindow(string titleKeyword, string stylePreset, int width, int height)
+        /// <summary>
+        /// 激活并置顶窗口（如果最小化则先还原）
+        /// </summary>
+        public void FocusWindow(IntPtr hwnd)
         {
-            var hwnd = _query.FindByTitle(titleKeyword);
-            if (hwnd is null) return;
+            if (!NativeWindowApi.IsWindow(hwnd)) return;
 
-            _managedWindow = hwnd;
-
-            // 应用样式
-            _style.ApplyPreset(hwnd.Value, stylePreset);
-
-            // 设置大小和居中
-            _layout.SetWindowLayout(hwnd.Value, new Size(width, height),
-                new WindowLayoutOptions
-                {
-                    UseClientSize = true,
-                    CenterToScreen = true
-                });
-
-            // 安装钩子
-            _hook.AttachWinEventHook(hwnd.Value, msg => Console.WriteLine(msg));
-        }
-
-        public void FocusWindow(string titleKeyword)
-        {
-            var hwnd = _query.FindByTitle(titleKeyword);
-            if (hwnd is null || !NativeWindowApi.IsWindow(hwnd.Value)) return;
-
-            // 如果最小化则还原
-            if (NativeWindowApi.IsIconic(hwnd.Value))
+            if (NativeWindowApi.IsIconic(hwnd))
             {
-                NativeWindowApi.ShowWindow(hwnd.Value, (int)ShowWindowCommand.Restore);
+                _logger.LogDebug("窗口处于最小化状态，尝试还原：{Handle}", hwnd);
+                NativeWindowApi.ShowWindow(hwnd, (int)ShowWindowCommand.Restore);
             }
 
-            NativeWindowApi.SetForegroundWindow(hwnd.Value);
-            NativeWindowApi.BringWindowToTop(hwnd.Value);
+            NativeWindowApi.SetForegroundWindow(hwnd);
+            NativeWindowApi.BringWindowToTop(hwnd);
+            _logger.LogInformation("已激活窗口：{Handle}", hwnd);
         }
 
-
-        public void ApplyStyle(string titleKeyword, string presetKey)
+        /// <summary>
+        /// 最小化窗口
+        /// </summary>
+        public void MinimizeWindow(IntPtr hwnd)
         {
-            var hwnd = _query.FindByTitle(titleKeyword);
-            if (hwnd is not null)
-            {
-                _style.ApplyPreset(hwnd.Value, presetKey);
-            }
+            NativeWindowApi.ShowWindow(hwnd, (int)ShowWindowCommand.Minimize);
+            _logger.LogInformation("窗口已最小化：{Handle}", hwnd);
         }
 
-        public void Cleanup()
+        /// <summary>
+        /// 最大化窗口
+        /// </summary>
+        public void MaximizeWindow(IntPtr hwnd)
         {
-            _hook.DetachWinEventHooks();
-            _hook.DetachCbtHook();
-            _managedWindow = null;
+            NativeWindowApi.ShowWindow(hwnd, (int)ShowWindowCommand.ShowMaximized);
+            _logger.LogInformation("窗口已最大化：{Handle}", hwnd);
+        }
+
+        /// <summary>
+        /// 恢复窗口（从最小化或最大化状态）
+        /// </summary>
+        public void RestoreWindow(IntPtr hwnd)
+        {
+            NativeWindowApi.ShowWindow(hwnd, (int)ShowWindowCommand.Restore);
+            _logger.LogInformation("窗口已恢复：{Handle}", hwnd);
+        }
+
+        /// <summary>
+        /// 隐藏窗口（不会关闭）
+        /// </summary>
+        public void HideWindow(IntPtr hwnd)
+        {
+            NativeWindowApi.ShowWindow(hwnd, (int)ShowWindowCommand.Hide);
+            _logger.LogInformation("窗口已隐藏：{Handle}", hwnd);
+        }
+
+        /// <summary>
+        /// 显示窗口（用于重新展示隐藏的窗口）
+        /// </summary>
+        public void ShowWindow(IntPtr hwnd)
+        {
+            NativeWindowApi.ShowWindow(hwnd, (int)ShowWindowCommand.Show);
+            _logger.LogInformation("窗口已显示：{Handle}", hwnd);
+        }
+
+        /// <summary>
+        /// 将窗口发送到底层（其他窗口之下）
+        /// </summary>
+        public void SendToBack(IntPtr hwnd)
+        {
+            NativeWindowApi.SetWindowPos(
+                hwnd,
+                new IntPtr(1), // HWND_BOTTOM
+                0, 0, 0, 0,
+                (uint)(SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE)
+            );
+            _logger.LogInformation("窗口已置底：{Handle}", hwnd);
         }
     }
 }

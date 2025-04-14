@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BorderlessWindowApp.Interop.Enums
+﻿namespace BorderlessWindowApp.Interop.Enums.Display
 {
     public enum DISPLAYCONFIG_DEVICE_INFO_TYPE : int
     {

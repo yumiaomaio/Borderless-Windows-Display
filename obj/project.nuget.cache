@@ -1,8 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "mcAjd8DksLE=",
+  "dgSpecHash": "8Dj+klyINKU=",
   "success": true,
   "projectFilePath": "C:\\Users\\luokeke\\Music\\RiderProjects\\BorderlessWindowApp\\BorderlessWindowApp\\BorderlessWindowApp.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\luokeke\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\10.0.0-preview.3.25171.5\\microsoft.extensions.dependencyinjection.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\luokeke\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0-preview.3.25171.5\\microsoft.extensions.dependencyinjection.abstractions.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\luokeke\\.nuget\\packages\\microsoft.extensions.logging\\10.0.0-preview.3.25171.5\\microsoft.extensions.logging.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\luokeke\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.0-preview.3.25171.5\\microsoft.extensions.logging.abstractions.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\luokeke\\.nuget\\packages\\microsoft.extensions.options\\10.0.0-preview.3.25171.5\\microsoft.extensions.options.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\luokeke\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.0-preview.3.25171.5\\microsoft.extensions.primitives.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\luokeke\\.nuget\\packages\\system.diagnostics.diagnosticsource\\10.0.0-preview.3.25171.5\\system.diagnostics.diagnosticsource.10.0.0-preview.3.25171.5.nupkg.sha512"
+  ],
   "logs": []
 }

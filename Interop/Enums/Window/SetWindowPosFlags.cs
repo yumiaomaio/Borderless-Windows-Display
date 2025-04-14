@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BorderlessWindowApp.Interop.Enums
+﻿namespace BorderlessWindowApp.Interop.Enums.Window
 {
     [Flags]
     public enum SetWindowPosFlags : uint

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 using BorderlessWindowApp.Interop.Enums;
+using BorderlessWindowApp.Interop.Enums.Window;
 using BorderlessWindowApp.Models;
 
 namespace BorderlessWindowApp.Services.WindowStyle

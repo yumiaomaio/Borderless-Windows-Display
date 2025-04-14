@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop.Enums;
+using BorderlessWindowApp.Interop.Enums.Display;
 
 namespace BorderlessWindowApp.Interop.Structs
 {

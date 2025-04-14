@@ -1,27 +1,46 @@
 ﻿using System;
 
-namespace BorderlessWindowApp.Services.Window
+namespace BorderlessWindowApp.Services
 {
+    /// <summary>
+    /// 提供基础的窗口控制操作，如激活、隐藏、最小化等。
+    /// 所有方法基于窗口句柄（HWND）操作。
+    /// </summary>
     public interface IWindowManagerService
     {
         /// <summary>
-        /// 初始化窗口：应用样式、定位、钩子
+        /// 激活并置顶窗口（如果最小化则先还原）
         /// </summary>
-        void InitWindow(string titleKeyword, string stylePreset, int width, int height);
+        void FocusWindow(IntPtr hwnd);
 
         /// <summary>
-        /// 尝试激活某个窗口，如果找不到则不操作
+        /// 最小化窗口
         /// </summary>
-        void FocusWindow(string titleKeyword);
+        void MinimizeWindow(IntPtr hwnd);
 
         /// <summary>
-        /// 应用样式预设（透明、置顶、样式）
+        /// 最大化窗口
         /// </summary>
-        void ApplyStyle(string titleKeyword, string presetKey);
+        void MaximizeWindow(IntPtr hwnd);
 
         /// <summary>
-        /// 停止钩子监听（窗口退出时）
+        /// 恢复窗口（从最小化或最大化状态）
         /// </summary>
-        void Cleanup();
+        void RestoreWindow(IntPtr hwnd);
+
+        /// <summary>
+        /// 隐藏窗口（不会关闭）
+        /// </summary>
+        void HideWindow(IntPtr hwnd);
+
+        /// <summary>
+        /// 显示窗口（用于重新展示隐藏的窗口）
+        /// </summary>
+        void ShowWindow(IntPtr hwnd);
+
+        /// <summary>
+        /// 将窗口发送到底层（其他窗口之下）
+        /// </summary>
+        void SendToBack(IntPtr hwnd);
     }
 }

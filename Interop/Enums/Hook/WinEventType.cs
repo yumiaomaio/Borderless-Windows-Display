@@ -1,5 +1,5 @@
 ﻿
-namespace BorderlessWindowApp.Interop.Enums
+namespace BorderlessWindowApp.Interop.Enums.Hook
 {
     [Flags]
     public enum WinEventType : uint

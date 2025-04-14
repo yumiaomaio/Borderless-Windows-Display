@@ -1,5 +1,4 @@
-﻿using BorderlessWindowApp.Models;
-using BorderlessWindowApp.Services.Display.Models;
+﻿using BorderlessWindowApp.Services.Display.Models;
 
 namespace BorderlessWindowApp.Services.Display
 {

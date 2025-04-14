@@ -1,4 +1,5 @@
 ﻿using BorderlessWindowApp.Interop.Enums;
+using BorderlessWindowApp.Interop.Enums.Window;
 
 namespace BorderlessWindowApp.Services.WindowStyle
 {

@@ -1,4 +1,4 @@
-﻿namespace BorderlessWindowApp.Interop.Enums;
+﻿namespace BorderlessWindowApp.Interop.Enums.Display;
 
 [Flags]
 public enum DisplayDeviceModeFields : uint
