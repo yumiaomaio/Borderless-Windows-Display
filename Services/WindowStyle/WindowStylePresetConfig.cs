@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using BorderlessWindowApp.Interop.Enums;
 
-namespace BorderlessWindowApp.Models
+namespace BorderlessWindowApp.Services.WindowStyle
 {
     public class WindowStylePresetConfig
     {

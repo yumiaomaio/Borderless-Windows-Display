@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BorderlessWindowApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+956719c6ad096db93ca455fcdf2867ee7fe93ff1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+63b7b6b9880fe77b064160d14ed416ca2daa6f69")]
 [assembly: System.Reflection.AssemblyProductAttribute("BorderlessWindowApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BorderlessWindowApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

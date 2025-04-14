@@ -40,12 +40,12 @@ namespace BorderlessWindowApp.Interop
         [DllImport("user32.dll")]
         public static extern int DisplayConfigSetDeviceInfo(ref DISPLAYCONFIG_SET_DPI header);
         
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern int ChangeDisplaySettingsEx(
-            string lpszDeviceName,
+            string? lpszDeviceName,
             ref DEVMODE lpDevMode,
             IntPtr hwnd,
-            uint dwFlags,
+            int dwflags,
             IntPtr lParam);
     }
 }

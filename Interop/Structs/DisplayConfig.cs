@@ -135,7 +135,7 @@ namespace BorderlessWindowApp.Interop.Structs
         public int y;
     }
     
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    [StructLayout(LayoutKind.Sequential, CharSet =CharSet.Unicode)]
     public struct DEVMODE
     {
         private const int CCHDEVICENAME = 32;
@@ -149,7 +149,7 @@ namespace BorderlessWindowApp.Interop.Structs
         public ushort dmSize;
         public ushort dmDriverExtra;
         public uint dmFields;
-
+        
         public int dmPositionX;
         public int dmPositionY;
         public uint dmDisplayOrientation;
@@ -181,6 +181,7 @@ namespace BorderlessWindowApp.Interop.Structs
 
         public uint dmPanningWidth;
         public uint dmPanningHeight;
+        
     }
     
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
