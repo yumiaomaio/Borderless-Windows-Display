@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop.Structs;
+using BorderlessWindowApp.Interop.Structs.Display;
 
 namespace BorderlessWindowApp.Interop
 {

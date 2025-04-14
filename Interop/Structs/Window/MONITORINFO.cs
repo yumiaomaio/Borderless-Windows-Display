@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace BorderlessWindowApp.Interop.Structs
+namespace BorderlessWindowApp.Interop.Structs.Window
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct MONITORINFO

@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop.Structs;
 using BorderlessWindowApp.Interop.Delegates;
 using BorderlessWindowApp.Interop.Enums;
+using BorderlessWindowApp.Interop.Enums.Window;
+using BorderlessWindowApp.Interop.Structs.Window;
 
 namespace BorderlessWindowApp.Interop
 {

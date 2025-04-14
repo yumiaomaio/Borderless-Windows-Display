@@ -1,17 +1,18 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using BorderlessWindowApp.Interop.Enums;
+﻿using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop.Enums.Display;
 
-namespace BorderlessWindowApp.Interop.Structs
+namespace BorderlessWindowApp.Interop.Structs.Display
 {
+    #region LUID Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct LUID
     {
         public uint LowPart;
         public int HighPart;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_DEVICE_INFO_HEADER Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_DEVICE_INFO_HEADER
     {
@@ -20,7 +21,9 @@ namespace BorderlessWindowApp.Interop.Structs
         public LUID adapterId;
         public uint id;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_GET_DPI Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_GET_DPI
     {
@@ -29,14 +32,18 @@ namespace BorderlessWindowApp.Interop.Structs
         public int curScaleRel;
         public int maxScaleRel;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_SET_DPI Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_SET_DPI
     {
         public DISPLAYCONFIG_DEVICE_INFO_HEADER header;
         public int scaleRel;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_PATH_SOURCE_INFO Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_PATH_SOURCE_INFO
     {
@@ -45,7 +52,9 @@ namespace BorderlessWindowApp.Interop.Structs
         public uint modeInfoIdx;
         public uint statusFlags;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_PATH_TARGET_INFO Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_PATH_TARGET_INFO
     {
@@ -60,7 +69,9 @@ namespace BorderlessWindowApp.Interop.Structs
         public bool targetAvailable;
         public uint statusFlags;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_PATH_INFO Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_PATH_INFO
     {
@@ -68,7 +79,9 @@ namespace BorderlessWindowApp.Interop.Structs
         public DISPLAYCONFIG_PATH_TARGET_INFO targetInfo;
         public uint flags;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_VIDEO_SIGNAL_INFO Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_VIDEO_SIGNAL_INFO
     {
@@ -80,7 +93,9 @@ namespace BorderlessWindowApp.Interop.Structs
         public uint videoStandard;
         public DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_SOURCE_MODE Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_SOURCE_MODE
     {
@@ -89,13 +104,17 @@ namespace BorderlessWindowApp.Interop.Structs
         public DISPLAYCONFIG_PIXELFORMAT pixelFormat;
         public POINTL position;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_TARGET_MODE Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_TARGET_MODE
     {
         public DISPLAYCONFIG_VIDEO_SIGNAL_INFO targetVideoSignalInfo;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_MODE_INFO_UNION Struct
     [StructLayout(LayoutKind.Explicit)]
     public struct DISPLAYCONFIG_MODE_INFO_UNION
     {
@@ -105,7 +124,9 @@ namespace BorderlessWindowApp.Interop.Structs
         [FieldOffset(0)]
         public DISPLAYCONFIG_SOURCE_MODE sourceMode;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_MODE_INFO Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_MODE_INFO
     {
@@ -114,28 +135,36 @@ namespace BorderlessWindowApp.Interop.Structs
         public LUID adapterId;
         public DISPLAYCONFIG_MODE_INFO_UNION modeInfo;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_RATIONAL Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_RATIONAL
     {
         public uint Numerator;
         public uint Denominator;
     }
+    #endregion
 
+    #region DISPLAYCONFIG_2DREGION Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct DISPLAYCONFIG_2DREGION
     {
         public uint cx;
         public uint cy;
     }
-    
+    #endregion
+
+    #region POINTL Struct
     [StructLayout(LayoutKind.Sequential)]
     public struct POINTL
     {
         public int x;
         public int y;
     }
-    
+    #endregion
+
+    #region DEVMODE Struct
     [StructLayout(LayoutKind.Sequential, CharSet =CharSet.Unicode)]
     public struct DEVMODE
     {
@@ -182,9 +211,10 @@ namespace BorderlessWindowApp.Interop.Structs
 
         public uint dmPanningWidth;
         public uint dmPanningHeight;
-        
     }
-    
+    #endregion
+
+    #region DISPLAY_DEVICE Struct
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     public struct DISPLAY_DEVICE
     {
@@ -199,5 +229,5 @@ namespace BorderlessWindowApp.Interop.Structs
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string DeviceKey;
     }
-
+    #endregion
 }

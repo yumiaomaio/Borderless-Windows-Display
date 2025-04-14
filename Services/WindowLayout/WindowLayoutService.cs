@@ -4,7 +4,9 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Enums;
+using BorderlessWindowApp.Interop.Enums.Window;
 using BorderlessWindowApp.Interop.Structs;
+using BorderlessWindowApp.Interop.Structs.Window;
 using Microsoft.Extensions.Logging;
 using Size = System.Drawing.Size;
 

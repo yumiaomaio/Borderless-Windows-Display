@@ -4,6 +4,7 @@ using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Interop.Enums.Display;
 using BorderlessWindowApp.Interop.Structs;
+using BorderlessWindowApp.Interop.Structs.Display;
 using BorderlessWindowApp.Services.Display.Models;
 
 namespace BorderlessWindowApp.Services.Display

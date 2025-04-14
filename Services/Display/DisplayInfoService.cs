@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Structs;
+using BorderlessWindowApp.Interop.Structs.Display;
 using BorderlessWindowApp.Services.Display.Models;
 
 namespace BorderlessWindowApp.Services.Display

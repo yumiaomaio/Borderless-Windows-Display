@@ -1,4 +1,4 @@
-﻿namespace BorderlessWindowApp.Interop.Enums
+﻿namespace BorderlessWindowApp.Interop.Enums.Window
 {
     public enum MonitorOptions : uint
     {
