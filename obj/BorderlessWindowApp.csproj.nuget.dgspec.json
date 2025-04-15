@@ -51,7 +51,23 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[10.0.0-preview.3.25171.5, )"
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.0-preview.3.25171.5, )"
+            },
             "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[10.0.0-preview.3.25171.5, )"
+            },
+            "Microsoft.Extensions.Logging.Console": {
+              "target": "Package",
+              "version": "[10.0.0-preview.3.25171.5, )"
+            },
+            "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
               "version": "[10.0.0-preview.3.25171.5, )"
             }

@@ -1,7 +1,8 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using BorderlessWindowApp.Interop;
-using  BorderlessWindowApp.Interop.Constants;
+using BorderlessWindowApp.Interop.Constants;
+using BorderlessWindowApp.Interop.Enums.Display;
 using BorderlessWindowApp.Interop.Structs.Display;
 using BorderlessWindowApp.Services.Display.Models;
 
@@ -36,6 +37,7 @@ namespace BorderlessWindowApp.Services.Display
                     names.Add(d.DeviceName); // "\\.\DISPLAY1"
                     _logger.LogDebug("Found active display device: {DeviceName}", d.DeviceName);
                 }
+
                 d.cb = Marshal.SizeOf(d);
             }
 
@@ -61,7 +63,8 @@ namespace BorderlessWindowApp.Services.Display
                     RefreshRate = (int)devMode.dmDisplayFrequency
                 };
                 modes.Add(mode);
-                _logger.LogDebug("Mode found for {Device}: {Width}x{Height} @ {Hz}Hz", deviceName, mode.Width, mode.Height, mode.RefreshRate);
+                _logger.LogDebug("Mode found for {Device}: {Width}x{Height} @ {Hz}Hz", deviceName, mode.Width,
+                    mode.Height, mode.RefreshRate);
             }
 
             _logger.LogInformation("Total display modes found for {Device}: {Count}", deviceName, modes.Count);
@@ -84,46 +87,14 @@ namespace BorderlessWindowApp.Services.Display
                     Height = (int)devMode.dmPelsHeight,
                     RefreshRate = (int)devMode.dmDisplayFrequency
                 };
-                _logger.LogInformation("Current mode for {Device}: {Width}x{Height} @ {Hz}Hz", deviceName, mode.Width, mode.Height, mode.RefreshRate);
+                _logger.LogInformation("Current mode for {Device}: {Width}x{Height} @ {Hz}Hz", deviceName, mode.Width,
+                    mode.Height, mode.RefreshRate);
                 return mode;
             }
 
             _logger.LogWarning("Failed to get current mode for device: {Device}", deviceName);
             return null;
         }
-        
-        public bool TryGetAdapterAndSourceId(string deviceName, out LUID adapterId, out uint sourceId)
-        {
-            adapterId = new LUID();
-            sourceId = 0;
-
-            uint pathCount = 0, modeCount = 0;
-            int result = NativeDisplayApi.GetDisplayConfigBufferSizes(DisplayConfigConstants.QDC_ONLY_ACTIVE_PATHS, ref pathCount, ref modeCount);
-            if (result != 0) return false;
-
-            var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
-            var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
-
-            result = NativeDisplayApi.QueryDisplayConfig(DisplayConfigConstants.QDC_ONLY_ACTIVE_PATHS, ref pathCount, paths, ref modeCount, modes, IntPtr.Zero);
-            if (result != 0) return false;
-
-            foreach (var path in paths)
-            {
-                var target = path.targetInfo;
-                if (!target.targetAvailable) continue;
-
-                string displayId = $"\\\\.\\DISPLAY{target.id + 1}";
-                if (string.Equals(displayId, deviceName, StringComparison.OrdinalIgnoreCase))
-                {
-                    adapterId = target.adapterId;
-                    sourceId = path.sourceInfo.id;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using BorderlessWindowApp.Interop;
+using BorderlessWindowApp.Interop.Constants;
 using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Interop.Enums.Display;
 using BorderlessWindowApp.Interop.Structs;
@@ -41,14 +42,16 @@ namespace BorderlessWindowApp.Services.Display
             int result = NativeDisplayApi.DisplayConfigGetDeviceInfo(ref header);
             if (result != 0)
             {
-                _logger.LogWarning("Failed to get DPI info for adapter {Adapter}, source {Source}, result={Result}", adapterId, sourceId, result);
+                _logger.LogWarning("Failed to get DPI info for adapter {Adapter}, source {Source}, result={Result}",
+                    adapterId, sourceId, result);
                 return new DpiScalingInfo();
             }
 
             int offset = Math.Abs(header.minScaleRel);
             if (DpiVals.Length <= offset + header.maxScaleRel)
             {
-                _logger.LogWarning("DPI offset range out of bounds. Offset={Offset}, MaxRel={MaxRel}", offset, header.maxScaleRel);
+                _logger.LogWarning("DPI offset range out of bounds. Offset={Offset}, MaxRel={MaxRel}", offset,
+                    header.maxScaleRel);
                 return new DpiScalingInfo();
             }
 
@@ -61,7 +64,8 @@ namespace BorderlessWindowApp.Services.Display
                 IsInitialized = true
             };
 
-            _logger.LogInformation("DPI info: Current={Current}%, Recommended={Recommended}%, Max={Max}%", info.Current, info.Recommended, info.Maximum);
+            _logger.LogInformation("DPI info: Current={Current}%, Recommended={Recommended}%, Max={Max}%", info.Current,
+                info.Recommended, info.Maximum);
             return info;
         }
 
@@ -83,7 +87,8 @@ namespace BorderlessWindowApp.Services.Display
             int idxRecommended = Array.IndexOf(DpiVals, info.Recommended);
             if (idxTarget < 0 || idxRecommended < 0)
             {
-                _logger.LogWarning("Invalid DPI value. Requested={Requested}, Recommended={Recommended}", dpiPercent, info.Recommended);
+                _logger.LogWarning("Invalid DPI value. Requested={Requested}, Recommended={Recommended}", dpiPercent,
+                    info.Recommended);
                 return false;
             }
 
@@ -109,5 +114,6 @@ namespace BorderlessWindowApp.Services.Display
 
             return success;
         }
+
     }
 }

@@ -13,6 +13,7 @@ namespace BorderlessWindowApp.ViewModels
 {
     public class DisplaySettingsViewModel : INotifyPropertyChanged
     {
+        public ObservableCollection<uint> CurrentScalingChoices { get; } = new() { 100, 125, 150, 175, 200, 250 };
         public ObservableCollection<string> DeviceNames { get; } = new();
         public ObservableCollection<DisplayModeInfo> SupportedModes { get; } = new();
 
@@ -95,16 +96,7 @@ namespace BorderlessWindowApp.ViewModels
             var current = _infoService.GetCurrentMode(deviceName);
             if (current != null)
                 SelectedMode = current;
-
-            if (_infoService.TryGetAdapterAndSourceId(deviceName, out _adapterId, out _sourceId))
-            {
-                var scaling = _scaleService.GetScalingInfo(_adapterId, _sourceId);
-                if (scaling != null && scaling.IsInitialized)
-                {
-                    CurrentScaling = scaling;
-                    SelectedScaling = scaling.Current;
-                }
-            }
+            
         }
 
         private void ApplyDisplayConfiguration()
@@ -121,6 +113,7 @@ namespace BorderlessWindowApp.ViewModels
 
             _configService.ApplyDisplayConfiguration(request);
         }
+        
 
         private void SetScaling()
         {

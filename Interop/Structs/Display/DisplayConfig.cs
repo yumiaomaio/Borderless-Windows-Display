@@ -14,7 +14,7 @@ namespace BorderlessWindowApp.Interop.Structs.Display
 
     #region DISPLAYCONFIG_DEVICE_INFO_HEADER Struct
     [StructLayout(LayoutKind.Sequential)]
-    public struct DISPLAYCONFIG_DEVICE_INFO_HEADER
+    public partial struct DISPLAYCONFIG_DEVICE_INFO_HEADER
     {
         public DISPLAYCONFIG_DEVICE_INFO_TYPE type;
         public uint size;
@@ -230,4 +230,5 @@ namespace BorderlessWindowApp.Interop.Structs.Display
         public string DeviceKey;
     }
     #endregion
+    
 }
