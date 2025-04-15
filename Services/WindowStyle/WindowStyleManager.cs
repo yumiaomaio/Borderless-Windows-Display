@@ -1,4 +1,5 @@
 ﻿using BorderlessWindowApp.Interop;
+using BorderlessWindowApp.Interop.Constants;
 using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Interop.Enums.Window;
 using Microsoft.Extensions.Logging;

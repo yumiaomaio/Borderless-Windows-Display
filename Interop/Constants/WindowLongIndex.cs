@@ -1,4 +1,4 @@
-﻿namespace BorderlessWindowApp.Interop.Enums.Window
+﻿namespace BorderlessWindowApp.Interop.Constants
 {
     public static class WindowLongIndex
     {

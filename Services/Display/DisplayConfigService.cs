@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using BorderlessWindowApp.Interop;
+using BorderlessWindowApp.Interop.Constants;
 using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Interop.Enums.Display;
 using BorderlessWindowApp.Interop.Structs;

@@ -48,5 +48,21 @@ namespace BorderlessWindowApp.Interop
             IntPtr hwnd,
             int dwflags,
             IntPtr lParam);
+        
+        [DllImport("user32.dll")]
+        public static extern int GetDisplayConfigBufferSizes(
+            int flags,
+            ref uint numPathArrayElements,
+            ref uint numModeInfoArrayElements);
+
+        [DllImport("user32.dll")]
+        public static extern int QueryDisplayConfig(
+            int flags,
+            ref uint numPathArrayElements,
+            [Out] DISPLAYCONFIG_PATH_INFO[] pathInfoArray,
+            ref uint numModeInfoArrayElements,
+            [Out] DISPLAYCONFIG_MODE_INFO[] modeInfoArray,
+            IntPtr currentTopologyId);
+
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace BorderlessWindowApp.Interop.Enums.Display
+﻿namespace BorderlessWindowApp.Interop.Constants
 {
     public static class DisplayConstants
     {
