@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using BorderlessWindowApp.Interop.Enums.Display;
 using BorderlessWindowApp.Interop.Structs;
 using BorderlessWindowApp.Interop.Structs.Display;
 using BorderlessWindowApp.Services.Display;
@@ -8,7 +9,9 @@ namespace BorderlessWindowApp.Interop
     public static class NativeDisplayApi
     {
         [DllImport("user32.dll")]
-        public static extern int GetDisplayConfigBufferSizes(uint flags, out uint numPathArrayElements, out uint numModeInfoArrayElements);
+        public static extern int GetDisplayConfigBufferSizes(
+            uint flags, out uint numPathArrayElements,
+            out uint numModeInfoArrayElements);
 
         [DllImport("user32.dll")]
         public static extern int QueryDisplayConfig(
@@ -25,7 +28,7 @@ namespace BorderlessWindowApp.Interop
             [In] DISPLAYCONFIG_PATH_INFO[] pathArray,
             int numModeInfoArrayElements,
             [In] DISPLAYCONFIG_MODE_INFO[] modeInfoArray,
-            DisplayInfoService.SetDisplayConfigFlags flags);
+            SetDisplayConfigFlags flags);
         
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern bool EnumDisplaySettings(
@@ -34,13 +37,17 @@ namespace BorderlessWindowApp.Interop
             ref DEVMODE devMode);
         
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern bool EnumDisplayDevices(string lpDevice, uint iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, uint dwFlags);
+        public static extern bool EnumDisplayDevices(
+            string lpDevice, uint iDevNum,
+            ref DISPLAY_DEVICE lpDisplayDevice, uint dwFlags);
 
         [DllImport("user32.dll")]
-        public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_GET_DPI header);
+        public static extern int DisplayConfigGetDeviceInfo(
+            ref DISPLAYCONFIG_GET_DPI header);
 
         [DllImport("user32.dll")]
-        public static extern int DisplayConfigSetDeviceInfo(ref DISPLAYCONFIG_SET_DPI header);
+        public static extern int DisplayConfigSetDeviceInfo(
+            ref DISPLAYCONFIG_SET_DPI header);
         
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern int ChangeDisplaySettingsEx(
@@ -66,7 +73,8 @@ namespace BorderlessWindowApp.Interop
             IntPtr currentTopologyId);
 
         [DllImport("user32.dll")]
-        public static extern int DisplayConfigGetDeviceInfo(ref DisplayInfoService.DISPLAYCONFIG_TARGET_DEVICE_NAME request);
+        public static extern int DisplayConfigGetDeviceInfo(
+            ref DISPLAYCONFIG_TARGET_DEVICE_NAME request);
 
     }
 }

@@ -12,6 +12,15 @@
         SET_DPI_SCALE = -4
     }
 
+    public enum DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY : uint
+    {
+        DISPLAYCONFIG_OUTPUT_TECHNOLOGY_OTHER = 0xFFFFFFFF,
+        DISPLAYCONFIG_OUTPUT_TECHNOLOGY_HD15 = 0,
+        DISPLAYCONFIG_OUTPUT_TECHNOLOGY_HDMI = 5,
+        DISPLAYCONFIG_OUTPUT_TECHNOLOGY_DISPLAYPORT_EXTERNAL = 10,
+        DISPLAYCONFIG_OUTPUT_TECHNOLOGY_DISPLAYPORT_EMBEDDED = 11,
+        DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INTERNAL = 0x80000000,
+    }
     public enum DISPLAYCONFIG_MODE_INFO_TYPE : uint
     {
         SOURCE = 1,
@@ -21,13 +30,14 @@
 
     public enum DISPLAYCONFIG_SCANLINE_ORDERING : uint
     {
-        Unspecified = 0,
-        Progressive = 1,
-        Interlaced = 2,
-        InterlacedUpperFieldFirst = Interlaced,
-        InterlacedLowerFieldFirst = 3,
+        UNSPECIFIED = 0,
+        PROGRESSIVE = 1,
+        INTERLACED = 2,
+        InterlacedUpperFieldFirst = INTERLACED,
+        INTERLACED_UPPERFIELDFIRST = 3,
+        INTERLACED_LOWERFIELDFIRST = 4,
     }
-
+    
     public enum DISPLAYCONFIG_PIXELFORMAT : uint
     {
         PixelFormat8Bpp = 1,
@@ -36,4 +46,49 @@
         PixelFormat32Bpp = 4,
         PixelFormatNongdi = 5
     }
+
+    [Flags]
+    public enum SetDisplayConfigFlags : uint
+    {
+        SDC_TOPOLOGY_INTERNAL = 0x00000001,
+        SDC_TOPOLOGY_CLONE = 0x00000002,
+        SDC_TOPOLOGY_EXTEND = 0x00000004,
+        SDC_TOPOLOGY_EXTERNAL = 0x00000008,
+        SDC_TOPOLOGY_SUPPLIED = 0x00000010,
+        SDC_USE_DATABASE_CURRENT = 0x00000200,
+        SDC_USE_SUPPLIED_DISPLAY_CONFIG = 0x00000020,
+        SDC_VALIDATE = 0x00000040,
+        SDC_APPLY = 0x00000080,
+        SDC_NO_OPTIMIZATION = 0x00000100,
+        SDC_ALLOW_CHANGES = 0x00000400,
+        SDC_SAVE_TO_DATABASE = 0x00000800,
+        SDC_ALLOW_PATH_ORDER_CHANGES = 0x00001000,
+        SDC_VIRTUAL_MODE_AWARE = 0x00002000,
+        SDC_USE_SUPPLIED_DEVICE_PATHS = 0x00010000
+    }
+    
+    [Flags]
+    public enum DisplayConfigPathFlags : uint
+    {
+        DISPLAYCONFIG_PATH_ACTIVE = 0x00000001
+    }
+
+    public enum DISPLAYCONFIG_ROTATION : uint
+    {
+        IDENTITY = 1, // No rotation
+        ROTATE90 = 2,
+        ROTATE180 = 3,
+        ROTATE270 = 4
+    }
+
+    public enum DISPLAYCONFIG_SCALING : uint
+    {
+        IDENTITY = 1, // 1:1 无缩放
+        CENTERED = 2,
+        STRETCHED = 3,
+        ASPECTRATIOCENTEREDMAX = 4,
+        CUSTOM = 5,
+        PREFERRED = 128
+    }
+    
 }

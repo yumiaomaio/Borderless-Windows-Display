@@ -1,6 +1,5 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop.Enums.Display;
-using BorderlessWindowApp.Services.Display;
 
 namespace BorderlessWindowApp.Interop.Structs.Display
 {
@@ -10,17 +9,6 @@ namespace BorderlessWindowApp.Interop.Structs.Display
     {
         public uint LowPart;
         public int HighPart;
-    }
-    #endregion
-
-    #region DISPLAYCONFIG_DEVICE_INFO_HEADER Struct
-    [StructLayout(LayoutKind.Sequential)]
-    public partial struct DISPLAYCONFIG_DEVICE_INFO_HEADER
-    {
-        public DISPLAYCONFIG_DEVICE_INFO_TYPE type;
-        public uint size;
-        public LUID adapterId;
-        public uint id;
     }
     #endregion
 
@@ -62,11 +50,11 @@ namespace BorderlessWindowApp.Interop.Structs.Display
         public LUID adapterId;
         public uint id;
         public uint modeInfoIdx;
-        public DisplayInfoService.DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY outputTechnology;
-        public DisplayInfoService.DISPLAYCONFIG_ROTATION rotation;
-        public DisplayInfoService.DISPLAYCONFIG_SCALING scaling;
+        public DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY outputTechnology;
+        public DISPLAYCONFIG_ROTATION rotation;
+        public DISPLAYCONFIG_SCALING scaling;
         public DISPLAYCONFIG_RATIONAL refreshRate;
-        public DisplayInfoService.DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
+        public DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
         public bool targetAvailable;
         public uint statusFlags;
     }
@@ -89,10 +77,10 @@ namespace BorderlessWindowApp.Interop.Structs.Display
         public ulong pixelRate;
         public DISPLAYCONFIG_RATIONAL hSyncFreq;
         public DISPLAYCONFIG_RATIONAL vSyncFreq;
-        public DisplayInfoService.SIZE activeSize;
-        public DisplayInfoService.SIZE totalSize;
+        public SIZE activeSize;
+        public SIZE totalSize;
         public uint videoStandard;
-        public DisplayInfoService.DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
+        public DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
     }
     #endregion
 
@@ -242,5 +230,46 @@ namespace BorderlessWindowApp.Interop.Structs.Display
         public string DeviceKey;
     }
     #endregion
+    
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct DISPLAYCONFIG_TARGET_DEVICE_NAME
+    {
+        public DISPLAYCONFIG_DEVICE_INFO_HEADER header;
+        public DISPLAYCONFIG_TARGET_DEVICE_NAME_FLAGS flags;
+        public DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY outputTechnology;
+        public ushort edidManufactureId;
+        public ushort edidProductCodeId;
+        public uint connectorInstance;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string monitorFriendlyDeviceName;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string monitorDevicePath;
+    }
+    
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DISPLAYCONFIG_TARGET_DEVICE_NAME_FLAGS
+    {
+        public uint value;
+    }
+    
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DISPLAYCONFIG_DEVICE_INFO_HEADER
+    {
+        public DISPLAYCONFIG_DEVICE_INFO_TYPE type;
+        public uint size;
+        public LUID adapterId;
+        public uint id;
+    }
+
+    
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SIZE
+    {
+        public uint cx; // Width
+        public uint cy; // Height
+    }
     
 }
