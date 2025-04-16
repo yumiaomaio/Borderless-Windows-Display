@@ -117,7 +117,8 @@ namespace BorderlessWindowApp.ViewModels
 
         private void SetScaling()
         {
-            _scaleService.SetScaling(_adapterId, _sourceId, SelectedScaling);
+            _infoService.TestDisplayTargets();
+            //_scaleService.SetScaling(_adapterId, _sourceId, SelectedScaling);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

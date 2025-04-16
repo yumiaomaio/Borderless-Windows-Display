@@ -14,9 +14,10 @@
 
     public enum DISPLAYCONFIG_MODE_INFO_TYPE : uint
     {
-        Source = 1,
-        Target = 2
+        SOURCE = 1,
+        TARGET = 2
     }
+
 
     public enum DISPLAYCONFIG_SCANLINE_ORDERING : uint
     {

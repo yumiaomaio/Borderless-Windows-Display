@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop.Enums.Display;
+using BorderlessWindowApp.Services.Display;
 
 namespace BorderlessWindowApp.Interop.Structs.Display
 {
@@ -61,11 +62,11 @@ namespace BorderlessWindowApp.Interop.Structs.Display
         public LUID adapterId;
         public uint id;
         public uint modeInfoIdx;
-        public uint outputTechnology;
-        public uint rotation;
-        public uint scaling;
+        public DisplayInfoService.DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY outputTechnology;
+        public DisplayInfoService.DISPLAYCONFIG_ROTATION rotation;
+        public DisplayInfoService.DISPLAYCONFIG_SCALING scaling;
         public DISPLAYCONFIG_RATIONAL refreshRate;
-        public DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
+        public DisplayInfoService.DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
         public bool targetAvailable;
         public uint statusFlags;
     }
@@ -88,10 +89,10 @@ namespace BorderlessWindowApp.Interop.Structs.Display
         public ulong pixelRate;
         public DISPLAYCONFIG_RATIONAL hSyncFreq;
         public DISPLAYCONFIG_RATIONAL vSyncFreq;
-        public DISPLAYCONFIG_2DREGION activeSize;
-        public DISPLAYCONFIG_2DREGION totalSize;
+        public DisplayInfoService.SIZE activeSize;
+        public DisplayInfoService.SIZE totalSize;
         public uint videoStandard;
-        public DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
+        public DisplayInfoService.DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
     }
     #endregion
 
@@ -127,14 +128,25 @@ namespace BorderlessWindowApp.Interop.Structs.Display
     #endregion
 
     #region DISPLAYCONFIG_MODE_INFO Struct
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Explicit)]
     public struct DISPLAYCONFIG_MODE_INFO
     {
+        [FieldOffset(0)]
         public DISPLAYCONFIG_MODE_INFO_TYPE infoType;
+
+        [FieldOffset(4)]
         public uint id;
+
+        [FieldOffset(8)]
         public LUID adapterId;
-        public DISPLAYCONFIG_MODE_INFO_UNION modeInfo;
+
+        [FieldOffset(16)]
+        public DISPLAYCONFIG_TARGET_MODE targetMode;
+
+        [FieldOffset(16)]
+        public DISPLAYCONFIG_SOURCE_MODE sourceMode;
     }
+
     #endregion
 
     #region DISPLAYCONFIG_RATIONAL Struct

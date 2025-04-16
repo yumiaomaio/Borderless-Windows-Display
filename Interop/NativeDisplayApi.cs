@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using BorderlessWindowApp.Interop.Structs;
 using BorderlessWindowApp.Interop.Structs.Display;
+using BorderlessWindowApp.Services.Display;
 
 namespace BorderlessWindowApp.Interop
 {
@@ -20,11 +21,11 @@ namespace BorderlessWindowApp.Interop
         
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int SetDisplayConfig(
-            uint numPathArrayElements,
+            int numPathArrayElements,
             [In] DISPLAYCONFIG_PATH_INFO[] pathArray,
-            uint numModeInfoArrayElements,
+            int numModeInfoArrayElements,
             [In] DISPLAYCONFIG_MODE_INFO[] modeInfoArray,
-            uint flags);
+            DisplayInfoService.SetDisplayConfigFlags flags);
         
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern bool EnumDisplaySettings(
@@ -63,6 +64,9 @@ namespace BorderlessWindowApp.Interop
             ref uint numModeInfoArrayElements,
             [Out] DISPLAYCONFIG_MODE_INFO[] modeInfoArray,
             IntPtr currentTopologyId);
+
+        [DllImport("user32.dll")]
+        public static extern int DisplayConfigGetDeviceInfo(ref DisplayInfoService.DISPLAYCONFIG_TARGET_DEVICE_NAME request);
 
     }
 }
