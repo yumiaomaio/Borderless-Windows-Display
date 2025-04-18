@@ -102,7 +102,7 @@ namespace BorderlessWindowApp.Services.Display
         
         
         #region DisplayConfig
-        private (string? DeviceName, string? DeviceString)? TryMapSourceIdToDeviceName(LUID adapterId, uint sourceId)
+        private (string? DeviceName, string? DeviceString, POINTL? Position)? TryMapSourceIdToDeviceName(LUID adapterId, uint sourceId)
         {
             // 先获取目标 source 的位置（position）
             uint pathCount = 0, modeCount = 0;
@@ -131,23 +131,32 @@ namespace BorderlessWindowApp.Services.Display
             d.cb = Marshal.SizeOf(d);
             uint devNum = 0;
 
+            string? mappedDeviceName = null;
+            string? mappedDeviceString = null;
             while (NativeDisplayApi.EnumDisplayDevices(null, devNum++, ref d, 0))
             {
-                if ((d.StateFlags & 0x00000001) == 0) continue;
+                // Check if the device is part of the desktop (active monitor)
+                if ((d.StateFlags & 0x00000001) == 0) continue; // DISPLAY_DEVICE_ATTACHED_TO_DESKTOP
 
                 DEVMODE devMode = new() { dmSize = (ushort)Marshal.SizeOf<DEVMODE>() };
-                if (NativeDisplayApi.EnumDisplaySettings(d.DeviceName, -1, ref devMode))
+                // Get the current settings for this display device
+                if (NativeDisplayApi.EnumDisplaySettings(d.DeviceName, -1 /* ENUM_CURRENT_SETTINGS */, ref devMode))
                 {
+                    // Compare the GDI position with the position found via QueryDisplayConfig
                     if (devMode.dmPositionX == sourcePos.Value.x && devMode.dmPositionY == sourcePos.Value.y)
                     {
-                        return (d.DeviceName, d.DeviceString);
+                        // Found a match
+                        mappedDeviceName = d.DeviceName;
+                        mappedDeviceString = d.DeviceString;
+                        break; // Stop searching once a match is found
                     }
                 }
 
+                // Reset cb size for the next call, as EnumDisplayDevices might modify it.
                 d.cb = Marshal.SizeOf(d);
             }
-
-            return null;
+            // Return the found GDI names (or null if not found) AND the position from QueryDisplayConfig
+            return (mappedDeviceName, mappedDeviceString, sourcePos);
         }
 
         private DisplayTargetDetails? GetDisplayTargetInfo(LUID adapterId, uint targetId)
@@ -226,8 +235,12 @@ namespace BorderlessWindowApp.Services.Display
                 {
                     display.DeviceName = mapping.Value.DeviceName;
                     display.DeviceString = mapping.Value.DeviceString;
+                    if (mapping.Value.Position.HasValue)
+                    {
+                        display.PositionX = mapping.Value.Position.Value.x;
+                        display.PositionY = mapping.Value.Position.Value.y;
+                    }
                 }
-
                 results.Add(display);
             }
 
@@ -242,14 +255,6 @@ namespace BorderlessWindowApp.Services.Display
             GetAllDeviceNames();
 
         }
-
-        #region api
-
         
-
-        public const uint DISPLAYCONFIG_PATH_ACTIVE = 0x00000001;
-
-        
-        #endregion
     }
 }
