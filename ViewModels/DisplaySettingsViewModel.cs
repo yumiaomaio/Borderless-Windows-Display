@@ -1,64 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media; // For Brush
 using BorderlessWindowApp.Services.Display;
 using BorderlessWindowApp.Services.Display.Models;
-using BorderlessWindowApp.Interop.Structs.Display; // For LUID
+
+// For LUID
 
 namespace BorderlessWindowApp.ViewModels
 {
-    // 定义预设项的模型
-    public class DisplayPreset : INotifyPropertyChanged
-    {
-        private string _name = "";
-        public string Name
-        {
-            get => _name;
-            set { _name = value; OnPropertyChanged(); }
-        }
-
-        private string _parameters = ""; // e.g., "1920x1080, 60Hz, 100% DPI"
-        public string Parameters
-        {
-            get => _parameters;
-            set { _parameters = value; OnPropertyChanged(); }
-        }
-
-        // 可以添加更多属性来存储实际的设置值
-        public string TargetDeviceName { get; set; } = "";
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public int RefreshRate { get; set; }
-        public uint Dpi { get; set; }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        public override string ToString() => Name; // For potential debugging or simple display
-    }
-
-
     public class DisplaySettingsViewModel : INotifyPropertyChanged
     {
         // --- 服务 ---
         private readonly IDisplayInfoService _infoService;
         private readonly IDisplayConfigService _configService;
         private readonly IDisplayScaleService _scaleService;
-
+        private readonly IDisplayPresetService _presetService; 
+        
         // --- 数据集合 ---
         private List<DisplayDeviceInfo> _allDeviceInfos = new();
         public ObservableCollection<string> DisplayDevices { get; } = new();
         public ObservableCollection<DisplayModeInfo> Resolutions { get; } = new();
         public ObservableCollection<int> RefreshRates { get; } = new();
-        public ObservableCollection<DisplayPreset> Presets { get; set; } = new(); // 添加 Presets 集合
+        public ObservableCollection<DisplayPreset> Presets { get; set; } = new();// 添加 Presets 集合
 
         // --- 选中项 ---
         private string? _selectedDeviceFriendlyName;
@@ -150,8 +115,7 @@ namespace BorderlessWindowApp.ViewModels
                 (ApplyPresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         }
-
-
+        
         // --- UI 显示属性 ---
         private string? _displayName;
         public string? DisplayName { 
@@ -191,68 +155,33 @@ namespace BorderlessWindowApp.ViewModels
         public ICommand DeletePresetCommand { get; } // 添加命令
         public ICommand ApplyPresetCommand { get; } // 添加命令
         public ICommand RestoreDefaultCommand { get; } // 添加命令
-
-
+        
         // --- 构造函数 ---
         public DisplaySettingsViewModel(IDisplayInfoService infoService,
             IDisplayConfigService configService,
-            IDisplayScaleService scaleService)
+            IDisplayScaleService scaleService,
+            IDisplayPresetService presetService)
         {
             _infoService = infoService ?? throw new ArgumentNullException(nameof(infoService));
             _configService = configService ?? throw new ArgumentNullException(nameof(configService));
             _scaleService = scaleService ?? throw new ArgumentNullException(nameof(scaleService));
+            _presetService = presetService ?? throw new ArgumentNullException(nameof(presetService));
 
             // 初始化命令
             ApplyCommand = new RelayCommand(ApplySettings, CanApplySettings);
             IdentifyCommand = new RelayCommand(IdentifyDisplays);
-            SavePresetCommand = new RelayCommand(SavePreset, CanSavePreset); // 实现 SavePreset 和 CanSavePreset
-            DeletePresetCommand = new RelayCommand(DeletePreset, CanDeletePreset); // 实现 DeletePreset 和 CanDeletePreset
-            ApplyPresetCommand = new RelayCommand(ApplyPreset, CanApplyPreset); // 实现 ApplyPreset 和 CanApplyPreset
-            RestoreDefaultCommand = new RelayCommand(RestoreDefault); // 实现 RestoreDefault
-
+            // Use async void for command handlers calling async methods, or use an async RelayCommand implementation
+            SavePresetCommand = new RelayCommand(async () => await SavePresetAsync(), CanSavePreset);
+            DeletePresetCommand = new RelayCommand(async () => await DeletePresetAsync(), CanDeletePreset);
+            ApplyPresetCommand = new RelayCommand(ApplyPreset, CanApplyPreset); // ApplyPreset might become async if needed
+            RestoreDefaultCommand = new RelayCommand(RestoreDefault); // RestoreDefault calls sync methods
+            
+            _ = LoadInitialDataAsync();
             LoadDeviceList();
-            LoadPresets(); // 加载已保存的预设
         }
 
-        // Design-time constructor (optional, for XAML preview)
-        public DisplaySettingsViewModel()
-        {
-            // Initialize with dummy data for XAML designer
-            if (DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject()))
-            {
-                _infoService = null!; // Or mock services
-                _configService = null!;
-                _scaleService = null!;
-                DisplayDevices.Add("设计时显示器 1");
-                DisplayDevices.Add("设计时显示器 2");
-                SelectedDeviceFriendlyName = "设计时显示器 1";
-                Resolutions.Add(new DisplayModeInfo { Width = 1920, Height = 1080, RefreshRate = 60 });
-                SelectedResolution = Resolutions[0];
-                RefreshRates.Add(60);
-                SelectedRefreshRate = 60;
-                Dpi = 125; MinDpi = 100; MaxDpi = 200;
-                DisplayName = "设计时显示器 1";
-                DisplayParameters = "1920x1080, 60Hz, 125% DPI";
-                StatusColor = Brushes.LimeGreen;
-                Presets.Add(new DisplayPreset { Name = "游戏模式", Parameters = "1920x1080, 144Hz, 100%" });
-                Presets.Add(new DisplayPreset { Name = "工作模式", Parameters = "2560x1440, 60Hz, 125%" });
-                ApplyCommand = new RelayCommand(() => { }, () => true);
-                IdentifyCommand = new RelayCommand(() => { });
-                SavePresetCommand = new RelayCommand(() => { }, () => true);
-                DeletePresetCommand = new RelayCommand(() => { }, () => Presets.Any());
-                ApplyPresetCommand = new RelayCommand(() => { }, () => Presets.Any());
-                RestoreDefaultCommand = new RelayCommand(() => { });
-            }
-            else
-            {
-                 throw new InvalidOperationException("Default constructor is only for design time.");
-            }
-        }
-
-
-        // --- 方法 (部分已在之前代码中) ---        // 步骤 1: 加载设备列表 (仅 FriendlyName)
-
-        private void LoadDeviceList() { /* ... 实现不变 ... */
+        // 步骤 1: 加载设备列表 (仅 FriendlyName)
+        private void LoadDeviceList() { 
              try
             {
                 // 使用新的 GetAllDisplayDevices 获取完整信息
@@ -279,7 +208,7 @@ namespace BorderlessWindowApp.ViewModels
              UpdateStatusColor();
         }
 
-                // 步骤 2: 当 SelectedDeviceFriendlyName 改变时，加载该设备的详细信息
+        // 步骤 2: 当 SelectedDeviceFriendlyName 改变时，加载该设备的详细信息
         private void LoadDisplayDetailsForSelectedDevice() { /* ... 实现不变 ... */
              var selectedDevice = GetSelectedDeviceInfo(); // 获取当前选中设备的详细信息
             if (selectedDevice == null || selectedDevice.DeviceName == null) // 需要 DeviceName 来获取模式 [cite: 10]
@@ -517,240 +446,252 @@ namespace BorderlessWindowApp.ViewModels
         }
 
         // -- Preset Logic --
-        private void LoadPresets()
+        private async Task LoadInitialDataAsync()
         {
-            Presets.Clear();
-            // TODO: 从持久化存储（如文件、注册表、数据库）加载预设列表
-            // 示例:
-            // var loadedPresets = PresetService.Load();
-            // foreach(var p in loadedPresets) Presets.Add(p);
-
-            // 临时添加示例数据
-             if (!DesignerProperties.GetIsInDesignMode(new System.Windows.DependencyObject())) // Don't add dummy data if already added by design-time ctor
-             {
-                 Presets.Add(new DisplayPreset { Name="演示1", Parameters="1920x1080, 60Hz, 100%", TargetDeviceName="Monitor A", Width=1920, Height=1080, RefreshRate=60, Dpi=100 });
-                 Presets.Add(new DisplayPreset { Name="演示2", Parameters="2560x1440, 120Hz, 125%", TargetDeviceName="Monitor B", Width=2560, Height=1440, RefreshRate=120, Dpi=125 });
-             }
-             SelectedPreset = null; // 默认不选中任何预设
+            await LoadPresetsAsync(); // Load presets first
+            LoadDeviceList();        // Then load devices (which sets the first device and triggers detail loading)
+            // Initial loading might trigger property changes and command state updates automatically.
+        }
+        
+        private async Task LoadPresetsAsync()
+        {
+            try
+            {
+                var loadedPresets = await _presetService.LoadPresetsAsync();
+                Presets.Clear();
+                foreach (var p in loadedPresets)
+                {
+                    Presets.Add(p);
+                }
+            }
+            catch (Exception ex)
+            {
+                 Console.WriteLine($"Error loading presets into ViewModel: {ex.Message}");
+                 // Handle error in UI if necessary
+            }
+            SelectedPreset = null; // Ensure nothing is selected initially
         }
 
         private bool CanSavePreset()
         {
-            // 必须选择了有效的设备、分辨率、刷新率才能保存
-            return GetSelectedDeviceInfo() != null &&
-                   SelectedResolution != null &&
-                   SelectedRefreshRate > 0;
+            // Can save if current settings are valid, regardless of device
+            return SelectedResolution != null && SelectedRefreshRate > 0;
         }
 
-        private void SavePreset()
+
+        // Made async to call the service's async save method
+                private async Task SavePresetAsync()
         {
-            // TODO: 实现保存逻辑
-            // 1. 获取当前设置
-            var currentDevice = GetSelectedDeviceInfo();
-            if (currentDevice == null || SelectedResolution == null || SelectedRefreshRate <= 0) return;
+            if (SelectedResolution == null || SelectedRefreshRate <= 0) return;
 
-            // 2. (可选) 弹出对话框让用户命名预设
-            string presetName = $"预设 {Presets.Count + 1}"; // 简单命名
-
-            // 3. 创建 Preset 对象
-            var newPreset = new DisplayPreset
+            // Create a temporary preset with the current values to check for duplicates
+             var presetValues = new DisplayPreset
             {
-                Name = presetName,
-                Parameters = $"{SelectedResolution.Width}x{SelectedResolution.Height}, {SelectedRefreshRate}Hz, {Dpi}% DPI",
-                TargetDeviceName = currentDevice.FriendlyName ?? "未知设备", // 保存友好名称供参考
-                // 保存实际值用于应用
                 Width = SelectedResolution.Width,
                 Height = SelectedResolution.Height,
                 RefreshRate = SelectedRefreshRate,
                 Dpi = Dpi
             };
 
-            // 4. 添加到集合并持久化
+            // Check if a preset with these exact values already exists
+            if (Presets.Any(p => p.Equals(presetValues)))
+            {
+                Console.WriteLine("Preset with these settings already exists.");
+                // TODO: Inform the user (e.g., MessageBox.Show("A preset with these settings already exists."))
+                return;
+            }
+
+            // TODO: Ask user for a name (replace simple naming)
+            // Example: var name = ShowNameInputDialog("Enter Preset Name"); if (string.IsNullOrEmpty(name)) return;
+            string presetName = $"Preset {Presets.Count + 1}"; // Simple default name
+
+            var newPreset = new DisplayPreset
+            {
+                Name = presetName, // Use the name provided by the user
+                Width = presetValues.Width,
+                Height = presetValues.Height,
+                RefreshRate = presetValues.RefreshRate,
+                Dpi = presetValues.Dpi
+            };
+
             Presets.Add(newPreset);
-            // TODO: PresetService.Save(Presets);
+            SelectedPreset = newPreset; // Select the new preset in the list
 
-            Console.WriteLine($"Preset saved: {newPreset.Name}");
+            try
+            {
+                await _presetService.SavePresetsAsync(Presets);
+                Console.WriteLine($"Preset saved: {newPreset.Name}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving presets: {ex.Message}");
+                Presets.Remove(newPreset); // Rollback UI change if save failed
+                SelectedPreset = null;
+                // TODO: Notify user of save failure
+            }
         }
 
-        private bool CanDeletePreset()
+        private bool CanDeletePreset() { return SelectedPreset != null; }
+        private async Task DeletePresetAsync()
         {
-            // 必须选中了一个预设才能删除
-            return SelectedPreset != null;
-        }
-
-        private void DeletePreset()
-        {
+            // ... (Implementation remains the same as previous version, using _presetService.SavePresetsAsync) ...
             if (SelectedPreset == null) return;
-
-            // TODO: (可选) 确认对话框
-
             var presetToRemove = SelectedPreset;
             Presets.Remove(presetToRemove);
-            // TODO: PresetService.Save(Presets); // 更新持久化存储
-
-            Console.WriteLine($"Preset deleted: {presetToRemove.Name}");
-            SelectedPreset = null; // 清除选中状态
+            SelectedPreset = null;
+            try {
+                await _presetService.SavePresetsAsync(Presets);
+                Console.WriteLine($"Preset deleted: {presetToRemove.Name}");
+            } catch (Exception ex) {
+                Console.WriteLine($"Error saving presets after deletion: {ex.Message}");
+                // Optional: Re-add to UI if save failed?
+                Presets.Add(presetToRemove); // Rollback example
+            }
         }
 
+        // Apply Preset: Now applies to the CURRENTLY SELECTED device, checking compatibility
         private bool CanApplyPreset()
         {
-            // 必须选中了一个预设才能应用
-            return SelectedPreset != null;
+            // Can apply if a preset is selected AND a device is selected in the UI
+            return SelectedPreset != null && GetSelectedDeviceInfo() != null;
         }
 
         private void ApplyPreset()
         {
             if (SelectedPreset == null) return;
-
-            // TODO: 实现应用预设的逻辑
-            // 1. 找到预设对应的设备 (可能需要根据 TargetDeviceName 查找)
-            //    注意：设备名称可能改变，需要更健壮的匹配逻辑 (例如设备路径或 ID)
-            //    这里简化为应用到当前选中的设备
-            var targetDevice = GetSelectedDeviceInfo();
-            if (targetDevice == null)
+            var currentDevice = GetSelectedDeviceInfo();
+            if (currentDevice?.DeviceName == null)
             {
-                 Console.WriteLine("Cannot apply preset: No device selected.");
-                 // 或者尝试根据 SelectedPreset.TargetDeviceName 查找
-                 targetDevice = _allDeviceInfos.FirstOrDefault(d => d.FriendlyName == SelectedPreset.TargetDeviceName);
-                 if (targetDevice == null || targetDevice.DeviceName == null) {
-                     Console.WriteLine($"Cannot apply preset: Target device '{SelectedPreset.TargetDeviceName}' not found or invalid.");
-                     return; // 无法找到目标设备
-                 }
-                 // 如果找到了，可能需要更新 UI 上的 SelectedDeviceFriendlyName
-                 // SelectedDeviceFriendlyName = targetDevice.FriendlyName; // 这会触发重新加载，可能不是期望行为
+                 Console.WriteLine("Cannot apply preset: No device selected in the UI.");
+                 // TODO: Notify user
+                 return;
             }
 
+            Console.WriteLine($"Attempting to apply preset '{SelectedPreset.Name}' ({SelectedPreset.Parameters}) to device '{currentDevice.FriendlyName}'...");
 
-            Console.WriteLine($"Applying preset '{SelectedPreset.Name}' to device '{targetDevice.FriendlyName}'...");
+            // 1. Check if the selected device supports the preset's Resolution
+            var supportedModes = _infoService.GetSupportedModes(currentDevice.DeviceName).ToList();
+            var modesWithTargetResolution = supportedModes
+                .Where(m => m.Width == SelectedPreset.Width && m.Height == SelectedPreset.Height)
+                .ToList();
 
-            // 2. 应用配置 (类似 ApplySettings，但使用预设的值)
-             var configRequest = new DisplayConfigRequest
+            if (!modesWithTargetResolution.Any())
             {
-                DeviceName = targetDevice.DeviceName!,
+                Console.WriteLine($"Error: Device '{currentDevice.FriendlyName}' does not support resolution {SelectedPreset.Width}x{SelectedPreset.Height}.");
+                // TODO: Notify User
+                return;
+            }
+
+            // 2. Determine the Target Refresh Rate
+            int targetRefreshRate = SelectedPreset.RefreshRate;
+            bool rateSupported = modesWithTargetResolution.Any(m => m.RefreshRate == targetRefreshRate);
+
+            if (!rateSupported)
+            {
+                // Exact rate not supported, find the closest or default available rate for this resolution
+                int bestAvailableRate = modesWithTargetResolution
+                                        .OrderBy(m => Math.Abs(m.RefreshRate - targetRefreshRate)) // Closest rate
+                                        // .OrderByDescending(m => m.RefreshRate) // Or Highest rate
+                                        .First() // Should always find one since modesWithTargetResolution is not empty
+                                        .RefreshRate;
+
+                Console.WriteLine($"Warning: Preset refresh rate {targetRefreshRate}Hz not supported by '{currentDevice.FriendlyName}' at {SelectedPreset.Width}x{SelectedPreset.Height}. Applying closest rate: {bestAvailableRate}Hz.");
+                // TODO: Optionally notify the user about the adjustment
+                targetRefreshRate = bestAvailableRate; // Use the supported rate
+            }
+
+            // 3. Apply the (potentially adjusted) settings
+            Console.WriteLine($"Applying: {SelectedPreset.Width}x{SelectedPreset.Height}, {targetRefreshRate}Hz, {SelectedPreset.Dpi}% DPI");
+
+            var configRequest = new DisplayConfigRequest
+            {
+                DeviceName = currentDevice.DeviceName,
                 Width = SelectedPreset.Width,
                 Height = SelectedPreset.Height,
-                RefreshRate = SelectedPreset.RefreshRate
+                RefreshRate = targetRefreshRate // Use the determined supported rate
             };
             bool configApplied = _configService.ApplyDisplayConfiguration(configRequest);
 
-             // 3. 应用 DPI
-             bool scaleApplied = false;
-             try
-             {
-                scaleApplied = _scaleService.SetScaling(targetDevice.AdapterId, targetDevice.SourceId, SelectedPreset.Dpi);
-             }
-             catch (Exception ex)
-             {
-                  Console.WriteLine($"Error applying scaling from preset: {ex.Message}");
+            bool scaleApplied = false;
+             try {
+                 // Only apply scaling if DPI is different from current scaling of target device
+                 var currentScaling = _scaleService.GetScalingInfo(currentDevice.AdapterId, currentDevice.SourceId);
+                 if (currentScaling.IsInitialized && currentScaling.Current != SelectedPreset.Dpi)
+                 {
+                     scaleApplied = _scaleService.SetScaling(currentDevice.AdapterId, currentDevice.SourceId, SelectedPreset.Dpi);
+                 } else if (!currentScaling.IsInitialized) {
+                     Console.WriteLine("Warning: Could not get current scaling info. Attempting to set DPI anyway.");
+                     scaleApplied = _scaleService.SetScaling(currentDevice.AdapterId, currentDevice.SourceId, SelectedPreset.Dpi);
+                 } else {
+                     scaleApplied = true; // DPI was already correct
+                 }
+             } catch (Exception ex) {
+                 Console.WriteLine($"Error applying scaling from preset: {ex.Message}");
              }
 
-
-            // 4. (可选) 应用后更新 ViewModel 状态以反映预设值
+            // 4. Update ViewModel state to reflect applied settings
             if (configApplied || scaleApplied)
             {
-                 // 如果应用到了当前选中的设备，则更新 UI
-                 if (targetDevice.FriendlyName == SelectedDeviceFriendlyName)
-                 {
-                      // 更新 ViewModel 属性，这会通过绑定更新 UI
-                      // 需要注意，这可能会触发连锁更新（如刷新率列表）
-                      SelectedResolution = Resolutions.FirstOrDefault(r => r.Width == SelectedPreset.Width && r.Height == SelectedPreset.Height);
-                      if (SelectedResolution != null) // 确保分辨率有效
-                      {
-                         // 在设置分辨率后，刷新率列表会更新，然后设置预设的刷新率
-                         // UpdateRefreshRates 会被 SelectedResolution setter 触发
-                          Dpi = SelectedPreset.Dpi; // 设置 DPI
-                          // 等待刷新率列表更新后再设置
-                          App.Current.Dispatcher.InvokeAsync(() => {
-                              SelectedRefreshRate = SelectedPreset.RefreshRate;
-                              UpdateDisplayParameters(); // 确保最终参数正确显示
-                          }, System.Windows.Threading.DispatcherPriority.Background);
-                      } else {
-                           Console.WriteLine("Warning: Preset resolution not found in supported modes for the current device.");
-                           LoadDisplayDetailsForSelectedDevice(); // Re-load current actual settings
-                      }
-                 }
-                 Console.WriteLine($"Preset '{SelectedPreset.Name}' applied.");
-                 UpdateStatusColor();
-            }
-             else
-             {
-                 Console.WriteLine($"Failed to apply preset '{SelectedPreset.Name}'.");
-                 // 可能需要通知用户
-             }
-        }
+                Console.WriteLine($"Preset '{SelectedPreset.Name}' applied (potentially with adjustments).");
 
+                // Reloading details is the most reliable way to update the UI
+                // It ensures we show the *actual* state after applying.
+                 LoadDisplayDetailsForSelectedDevice();
+
+                 // Alternative (less reliable if Apply failed partially):
+                 /*
+                 SelectedResolution = Resolutions.FirstOrDefault(r => r.Width == SelectedPreset.Width && r.Height == SelectedPreset.Height);
+                 if (SelectedResolution != null) {
+                     // UpdateRefreshRates will be called by SelectedResolution setter
+                      // Need to ensure the targetRefreshRate is set *after* RefreshRates list is updated
+                     App.Current.Dispatcher.InvokeAsync(() => {
+                         SelectedRefreshRate = targetRefreshRate; // Set the rate that was actually applied
+                         Dpi = SelectedPreset.Dpi;                 // Set the DPI
+                         UpdateDisplayParameters();
+                     }, System.Windows.Threading.DispatcherPriority.Background);
+                 }
+                 */
+            }
+            else
+            {
+                 Console.WriteLine($"Failed to apply preset '{SelectedPreset.Name}'. Config Success: {configApplied}, Scaling Success: {scaleApplied}");
+                 // TODO: Notify user
+            }
+            UpdateStatusColor();
+        }
+        
         private void RestoreDefault()
         {
-            // TODO: 实现恢复默认设置的逻辑
-            // 这可能涉及调用系统 API 或应用一个“默认”的预设配置
-            Console.WriteLine("RestoreDefault command executed (implementation pending).");
-
-            // 示例：重新加载当前设备的实际设置，覆盖用户未应用的更改
+            Console.WriteLine("RestoreDefault command executed.");
             LoadDisplayDetailsForSelectedDevice();
         }
+
 
         // --- INotifyPropertyChanged 实现 ---
         public event PropertyChangedEventHandler? PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-            // 触发依赖命令的状态更新
+            // ... Update command CanExecute states as before ...
             if (propertyName == nameof(SelectedDeviceFriendlyName) ||
                 propertyName == nameof(SelectedResolution) ||
-                propertyName == nameof(SelectedRefreshRate))
+                propertyName == nameof(SelectedRefreshRate) ||
+                propertyName == nameof(Dpi))
             {
                 (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged();
-                (SavePresetCommand as RelayCommand)?.RaiseCanExecuteChanged(); // 保存命令依赖当前设置
+                (SavePresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (ApplyPresetCommand as RelayCommand)?.RaiseCanExecuteChanged(); // Also depends on device being selected
             }
-
-             if (propertyName == nameof(SelectedPreset))
-             {
-                 (DeletePresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
-                 (ApplyPresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
-             }
-        }
-
-        // --- RelayCommand 类 ---
-        public class RelayCommand : ICommand {
-            private readonly Action _execute;
-            private readonly Func<bool>? _canExecute; // 使 canExecute 可选
-
-            public event EventHandler? CanExecuteChanged; // C# 6 null-conditional operator
-
-            public RelayCommand(Action execute, Func<bool>? canExecute = null)
+            if (propertyName == nameof(SelectedPreset))
             {
-                _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-                _canExecute = canExecute;
+                (DeletePresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (ApplyPresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
-
-            // 如果未提供 canExecute 函数，则始终认为可以执行
-            public bool CanExecute(object? parameter) => _canExecute == null || _canExecute();
-
-            public void Execute(object? parameter) => _execute();
-
-            // 公开方法以允许 ViewModel 手动触发 CanExecuteChanged
-            public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            if (propertyName == nameof(SelectedDeviceFriendlyName)) // Check if device is selected for ApplyPreset
+            {
+                (ApplyPresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
         }
     }
-
-     // --- Value Converters (示例) ---
-     // 需要在你的项目中实际创建这个类
-     public class DisplayModeInfoToStringConverter : System.Windows.Data.IValueConverter
-     {
-         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-         {
-             if (value is DisplayModeInfo mode)
-             {
-                 //return $"{mode.Width} x {mode.Height}"; // 只显示分辨率
-                 return mode.ToString(); // 使用模型自带的 ToString()，例如 "1920x1080@60Hz"
-             }
-             return Binding.DoNothing;
-         }
-
-         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-         {
-             throw new NotImplementedException(); // 通常 ComboBox 不需要 ConvertBack
-         }
-     }
+     
 }

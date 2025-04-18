@@ -17,8 +17,8 @@ namespace BorderlessWindowApp
             var infoService = new DisplayInfoService(new NullLogger<DisplayInfoService>());
             var configService = new DisplayConfigService(new NullLogger<DisplayConfigService>());
             var scaleService = new DisplayScaleService(new NullLogger<DisplayScaleService>());
-
-            _viewModel = new DisplaySettingsViewModel(infoService, configService, scaleService);
+            var prestService = new DisplayPresetService();
+            _viewModel = new DisplaySettingsViewModel(infoService, configService, scaleService,prestService);
             this.DataContext = _viewModel;
 
             this.Loaded += DisplaySettingsView_Loaded;
