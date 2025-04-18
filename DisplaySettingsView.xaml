@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:BorderlessWindowApp"
+             xmlns:models="clr-namespace:BorderlessWindowApp.Services.Display.Models"
              mc:Ignorable="d"
              d:DesignHeight="550" d:DesignWidth="400">
     <UserControl.Resources>
@@ -184,10 +185,15 @@
 
                 <!-- 显示器信息 -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
-                    <TextBlock Text="{Binding DisplayName, FallbackValue='选择显示器...'}"
-                               FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextColor}" />
-                    <TextBlock Text="{Binding DisplayParameters, FallbackValue='参数信息...'}"
-                               FontSize="15" Foreground="{StaticResource PrimaryTextColor}" Margin="0,3,0,0" />
+                    <TextBlock Text="{Binding HeaderDisplayName, FallbackValue='[?] Unknown (N/A)'}"
+                               FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextColor}"
+                               TextTrimming="CharacterEllipsis" ToolTip="{Binding HeaderDisplayName}"/>
+                    <TextBlock Text="{Binding HeaderDisplayParameters, FallbackValue='N/A, N/A, N/A'}"
+                               FontSize="14" Foreground="{StaticResource PrimaryTextColor}" Margin="0,3,0,0"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding HeaderDeviceString, FallbackValue='Device Details N/A'}"
+                               FontSize="11" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,0,0"
+                               TextTrimming="CharacterEllipsis" ToolTip="{Binding HeaderDeviceString}"/>
                 </StackPanel>
 
                 <!-- 识别按钮 -->
@@ -211,17 +217,10 @@
                     <StackPanel>
                         <TextBlock Text="显示设置" Style="{StaticResource SectionTitleStyle}" />
 
-                        <TextBlock Text="选择显示器" Style="{StaticResource LabelTextStyle}" />
-                        <Grid Margin="0,4,0,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <ComboBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,0,0"
-                                      ItemsSource="{Binding DisplayDevices}"
-                                      SelectedItem="{Binding SelectedDeviceFriendlyName, Mode=TwoWay}" />
-
-                        </Grid>
+                        <TextBlock Text="选择显示器" Style="{StaticResource LabelTextStyle}"/>
+                        <ComboBox ItemsSource="{Binding DisplayDevices}"
+                                  SelectedItem="{Binding SelectedDevice, Mode=TwoWay}"
+                                  DisplayMemberPath="ComboBoxDisplayText"  />
 
                         <TextBlock Text="分辨率" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4" />
                         <ComboBox ItemsSource="{Binding Resolutions}"
