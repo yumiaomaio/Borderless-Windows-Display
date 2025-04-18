@@ -59,3 +59,7 @@ C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\DisplaySettingsView.baml
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\DisplaySettingsView.g.cs
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Borderle.33FB172D.Up2Date
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\MainWindow.g.cs
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\BorderlessWindowApp_MarkupCompile.lref
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\MainWindow.baml

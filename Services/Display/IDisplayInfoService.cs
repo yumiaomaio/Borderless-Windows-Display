@@ -10,7 +10,7 @@ namespace BorderlessWindowApp.Services.Display
         IEnumerable<string> GetAllDeviceNames();
         IEnumerable<DisplayModeInfo> GetSupportedModes(string deviceName);
         DisplayModeInfo? GetCurrentMode(string deviceName);
-
+        List<DisplayDeviceInfo> GetAllDisplayDevices();
         void TestDisplayTargets();
     }
 }

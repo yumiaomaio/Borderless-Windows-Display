@@ -1,53 +1,299 @@
-﻿<Window x:Class="BorderlessWindowApp.Views.DisplaySettingsView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="显示设置" Height="400" Width="600">
-    <Grid Margin="20">
+﻿<UserControl x:Class="BorderlessWindowApp.DisplaySettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:BorderlessWindowApp"
+             mc:Ignorable="d"
+             d:DesignHeight="550" d:DesignWidth="400">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="PrimaryTextColor" Color="#212121" />
+        <SolidColorBrush x:Key="SecondaryTextColor" Color="#757575" />
+        <SolidColorBrush x:Key="AccentColorBrush" Color="#448AFF" />
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="BorderBrush" Color="#E0E0E0" />
+        <SolidColorBrush x:Key="ButtonForegroundBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="SecondaryButtonBackgroundBrush" Color="#E0E0E0" />
+        <SolidColorBrush x:Key="SecondaryButtonForegroundBrush" Color="#424242" />
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextColor}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="LabelTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextColor}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+
+        <Style x:Key="SettingsCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="10,0,10,12" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" Direction="270" ShadowDepth="1" Opacity="0.1" BlurRadius="4" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HeaderFooterCardStyle" TargetType="Border" BasedOn="{StaticResource SettingsCardStyle}">
+            <Setter Property="Margin" Value="10,10,27,5" />
+        </Style>
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextColor}" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+
+        <Style x:Key="StandardButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentColorBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource ButtonForegroundBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="MinWidth" Value="70" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#42A5F5" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#1E88E5" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#BDBDBD" />
+                                <Setter Property="Foreground" Value="#757575" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource StandardButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource SecondaryButtonBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource SecondaryButtonForegroundBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#EEEEEE" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#E0E0E0" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="#EEEEEE" />
+                                <Setter Property="Foreground" Value="#BDBDBD" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        </Style>
+
+        <Style TargetType="Slider">
+            <Setter Property="Margin" Value="0,4,0,8" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Height" Value="22" />
+        </Style>
+
+        <Style TargetType="ListBox">
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd" Padding="{TemplateBinding Padding}" Background="Transparent"
+                                SnapsToDevicePixels="true">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="true">
+                                <Setter Property="Background" TargetName="Bd" Value="#E3F2FD" />
+                                <Setter Property="Foreground" Value="{StaticResource AccentColorBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="Bd" Value="#F5F5F5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- 设备选择 -->
-        <ComboBox Grid.Row="0"
-                  ItemsSource="{Binding DeviceNames}"
-                  SelectedItem="{Binding SelectedDevice}"
-                  Margin="0,0,0,10"
-                  Height="30"/>
+        <Border Grid.Row="0" Style="{StaticResource HeaderFooterCardStyle}" Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>  <!-- 图标 -->
+                    <ColumnDefinition Width="*"/>    <!-- 显示器信息 -->
+                    <ColumnDefinition Width="Auto"/> <!-- 识别按钮 -->
+                    <ColumnDefinition Width="Auto"/> <!-- 状态点 -->
+                </Grid.ColumnDefinitions>
 
-        <!-- 支持的模式 -->
-        <ListBox Grid.Row="1"
-                 ItemsSource="{Binding SupportedModes}"
-                 SelectedItem="{Binding SelectedMode}"
-                 DisplayMemberPath="ToString"
-                 Margin="0,0,0,10"
-                 Height="150"/>
+                <!-- 图标 -->
+                <TextBlock Grid.Column="0" Text="🖥️" FontSize="28" Margin="0,0,12,0" VerticalAlignment="Center" />
 
-        <!-- 当前缩放 -->
-        <TextBlock Grid.Row="2"
-                   Text="{Binding CurrentScaling.Current, StringFormat='当前缩放: {0}%'}"
-                   FontWeight="Bold"
-                   Margin="0,5"/>
+                <!-- 显示器信息 -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                    <TextBlock Text="{Binding DisplayName, FallbackValue='选择显示器...'}"
+                               FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextColor}" />
+                    <TextBlock Text="{Binding DisplayParameters, FallbackValue='参数信息...'}"
+                               FontSize="15" Foreground="{StaticResource PrimaryTextColor}" Margin="0,3,0,0" />
+                </StackPanel>
 
-        <!-- 可选缩放 -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,5">
-            <TextBlock Text="选择缩放比例：" VerticalAlignment="Center"/>
-            <ComboBox ItemsSource="{Binding CurrentScalingChoices}"
-                      SelectedItem="{Binding SelectedScaling}"
-                      Width="100"
-                      Margin="10,0"/>
-        </StackPanel>
+                <!-- 识别按钮 -->
+                <Button Grid.Column="2" Content="🔍 识别"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding IdentifyCommand}" Padding="8,4"
+                        VerticalAlignment="Center"
+                        Margin="0,0,10,0" />
 
-        <!-- 按钮 -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-            <Button Content="应用显示设置"
-                    Command="{Binding ApplyConfigCommand}"
-                    Margin="0,0,10,0"/>
-            <Button Content="设置缩放比例"
-                    Command="{Binding SetScalingCommand}"/>
-        </StackPanel>
+                <!-- 状态点 -->
+                <Ellipse Grid.Column="3" Width="12" Height="12"
+                         Fill="{Binding StatusColor, FallbackValue='Gray'}" VerticalAlignment="Center"
+                         ToolTip="设备状态" />
+            </Grid>
+
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,5,0,5">
+            <StackPanel>
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="显示设置" Style="{StaticResource SectionTitleStyle}" />
+
+                        <TextBlock Text="选择显示器" Style="{StaticResource LabelTextStyle}" />
+                        <Grid Margin="0,4,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox Grid.Column="0" VerticalAlignment="Center" Margin="0,0,0,0"
+                                      ItemsSource="{Binding DisplayDevices}"
+                                      SelectedItem="{Binding SelectedDeviceFriendlyName, Mode=TwoWay}" />
+
+                        </Grid>
+
+                        <TextBlock Text="分辨率" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4" />
+                        <ComboBox ItemsSource="{Binding Resolutions}"
+                                  SelectedItem="{Binding SelectedResolution, Mode=TwoWay}"
+                                  DisplayMemberPath="." />
+                        <TextBlock Text="刷新率" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4" />
+                        <ComboBox ItemsSource="{Binding RefreshRates}"
+                                  SelectedItem="{Binding SelectedRefreshRate, Mode=TwoWay}" />
+
+                        <TextBlock Text="DPI 缩放" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Slider Minimum="{Binding MinDpi}" Maximum="{Binding MaxDpi}"
+                                    Value="{Binding Dpi, Mode=TwoWay}"
+                                    TickFrequency="25" IsSnapToTickEnabled="True"
+                                    TickPlacement="BottomRight" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding Dpi, StringFormat={}{0}%}"
+                                       Foreground="{StaticResource SecondaryTextColor}" FontSize="12"
+                                       Margin="8,0,0,0" MinWidth="35" TextAlignment="Right" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="预设配置" Style="{StaticResource SectionTitleStyle}" />
+
+                        <ListBox x:Name="PresetList" Height="120"
+                                 ItemsSource="{Binding Presets}"
+                                 SelectedItem="{Binding SelectedPreset, Mode=TwoWay}"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="📌" Width="20" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Name}" Width="Auto" MaxWidth="120"
+                                                   TextTrimming="CharacterEllipsis" FontWeight="SemiBold"
+                                                   FontSize="13" Margin="0,0,10,0" />
+                                        <TextBlock Text="{Binding Parameters}"
+                                                   Foreground="{StaticResource SecondaryTextColor}" FontSize="11"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+                            <Button Content="💾 保存" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding SavePresetCommand}" />
+                            <Button Content="🗑️ 删除" Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding DeletePresetCommand}" />
+                            <Button Content="⚡ 应用预设" Style="{StaticResource StandardButtonStyle}"
+                                    Command="{Binding ApplyPresetCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="2" Style="{StaticResource HeaderFooterCardStyle}"
+                CornerRadius="8,8,0,0" Margin="10,5,27,10" Padding="8">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="🔄 恢复默认" Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding RestoreDefaultCommand}" />
+                <Button Content="✅ 应用配置" Style="{StaticResource StandardButtonStyle}"
+                        Command="{Binding ApplyCommand}" />
+            </StackPanel>
+        </Border>
     </Grid>
-</Window>
+</UserControl>
