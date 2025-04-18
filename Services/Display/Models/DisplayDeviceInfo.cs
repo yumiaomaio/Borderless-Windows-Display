@@ -19,7 +19,6 @@ public class DisplayDeviceInfo
     public string ComboBoxDisplayText { get => FormatComboBoxItemText(this); }
 
     #region Tools
-
     private string FormatComboBoxItemText(DisplayDeviceInfo deviceInfo)
     {
         if (deviceInfo == null) return "Invalid Device";

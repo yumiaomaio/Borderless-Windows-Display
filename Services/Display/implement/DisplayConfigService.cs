@@ -1,14 +1,12 @@
 ﻿using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Constants;
-using BorderlessWindowApp.Interop.Enums;
 using BorderlessWindowApp.Interop.Enums.Display;
-using BorderlessWindowApp.Interop.Structs;
 using BorderlessWindowApp.Interop.Structs.Display;
 using BorderlessWindowApp.Services.Display.Models;
+using Microsoft.Extensions.Logging;
 
-namespace BorderlessWindowApp.Services.Display
+namespace BorderlessWindowApp.Services.Display.implement
 {
     /// <summary>
     /// 提供显示器配置的应用服务，例如分辨率、刷新率、色深与位置等。

@@ -1,11 +1,11 @@
 ﻿using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
 using BorderlessWindowApp.Interop;
 using BorderlessWindowApp.Interop.Enums.Display;
 using BorderlessWindowApp.Interop.Structs.Display;
 using BorderlessWindowApp.Services.Display.Models;
+using Microsoft.Extensions.Logging;
 
-namespace BorderlessWindowApp.Services.Display
+namespace BorderlessWindowApp.Services.Display.implement
 {
     /// <summary>
     /// 提供 DPI 缩放查询与设置服务。
