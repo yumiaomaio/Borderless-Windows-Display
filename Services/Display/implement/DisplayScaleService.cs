@@ -82,11 +82,20 @@ namespace BorderlessWindowApp.Services.Display.implement
 
             int idxTarget = Array.IndexOf(DpiVals, dpiPercent);
             int idxRecommended = Array.IndexOf(DpiVals, info.Recommended);
+            int idxMax = Array.IndexOf(DpiVals, info.Maximum);
+            
             if (idxTarget < 0 || idxRecommended < 0)
             {
                 _logger.LogWarning("Invalid DPI value. Requested={Requested}, Recommended={Recommended}", dpiPercent,
                     info.Recommended);
                 return false;
+            }
+            
+            if (idxTarget > idxMax)
+            {
+                _logger.LogWarning("Requested DPI exceeds maximum. Requested={Requested}, Max={Max}", dpiPercent,
+                    info.Maximum);
+                idxTarget = idxMax;
             }
 
             int relative = idxTarget - idxRecommended;

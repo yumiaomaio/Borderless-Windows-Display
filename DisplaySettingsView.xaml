@@ -199,7 +199,7 @@
                 <!-- 识别按钮 -->
                 <Button Grid.Column="2" Content="🔍 识别"
                         Style="{StaticResource SecondaryButtonStyle}"
-                        Command="{Binding IdentifyCommand}" Padding="8,4"
+                        Command="{Binding DeviceSelector.IdentifyCommand}" Padding="8,4"
                         VerticalAlignment="Center"
                         Margin="0,0,10,0" />
 
@@ -218,8 +218,8 @@
                         <TextBlock Text="显示设置" Style="{StaticResource SectionTitleStyle}" />
 
                         <TextBlock Text="选择显示器" Style="{StaticResource LabelTextStyle}"/>
-                        <ComboBox ItemsSource="{Binding DisplayDevices}"
-                                  SelectedItem="{Binding SelectedDevice, Mode=TwoWay}"
+                        <ComboBox ItemsSource="{Binding DeviceSelector.DisplayDevices}"
+                                  SelectedItem="{Binding DeviceSelector.SelectedDevice, Mode=TwoWay}"
                                   DisplayMemberPath="ComboBoxDisplayText"  />
 
                         <TextBlock Text="分辨率" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4" />
@@ -238,8 +238,10 @@
                             </Grid.ColumnDefinitions>
                             <Slider Minimum="{Binding MinDpi}" Maximum="{Binding MaxDpi}"
                                     Value="{Binding Dpi, Mode=TwoWay}"
+                                    IsEnabled="{Binding SelectedDevice, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=Invert}"
                                     TickFrequency="25" IsSnapToTickEnabled="True"
-                                    TickPlacement="BottomRight" />
+                                    TickPlacement="BottomRight" >
+                            </Slider>
                             <TextBlock Grid.Column="1"
                                        Text="{Binding Dpi, StringFormat={}{0}%}"
                                        Foreground="{StaticResource SecondaryTextColor}" FontSize="12"
@@ -253,8 +255,8 @@
                         <TextBlock Text="预设配置" Style="{StaticResource SectionTitleStyle}" />
 
                         <ListBox x:Name="PresetList" Height="120"
-                                 ItemsSource="{Binding Presets}"
-                                 SelectedItem="{Binding SelectedPreset, Mode=TwoWay}"
+                                 ItemsSource="{Binding PresetManager.Presets}"
+                                 SelectedItem="{Binding PresetManager.SelectedPreset, Mode=TwoWay}"
                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
@@ -275,7 +277,7 @@
                             <Button Content="💾 保存" Style="{StaticResource SecondaryButtonStyle}"
                                     Command="{Binding SavePresetCommand}" />
                             <Button Content="🗑️ 删除" Style="{StaticResource SecondaryButtonStyle}"
-                                    Command="{Binding DeletePresetCommand}" />
+                                    Command="{Binding PresetManager.DeletePresetCommand}" />
                             <Button Content="⚡ 应用预设" Style="{StaticResource StandardButtonStyle}"
                                     Command="{Binding ApplyPresetCommand}" />
                         </StackPanel>

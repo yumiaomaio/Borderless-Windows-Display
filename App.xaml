@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:BorderlessWindowApp"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-
+        <ZoomPercentageConverter x:Key="NullToBooleanConverter" />
     </Application.Resources>
 </Application>

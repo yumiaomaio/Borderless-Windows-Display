@@ -63,3 +63,4 @@ C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\BorderlessWindowApp_MarkupCompile.lref
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\MainWindow.baml
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\App.baml
