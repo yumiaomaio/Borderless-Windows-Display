@@ -1,9 +1,7 @@
-﻿
-using BorderlessWindowApp.Services.Display;
+﻿using BorderlessWindowApp.Services.Display;
 using BorderlessWindowApp.Services.Display.Models;
 
-
-namespace BorderlessWindowApp.ViewModels
+namespace BorderlessWindowApp.ViewModels.Display
 {
     public class DisplaySettingsApplicator : IDisplaySettingsApplicator
     {

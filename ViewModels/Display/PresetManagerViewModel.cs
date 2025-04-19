@@ -1,15 +1,15 @@
 ﻿// File: ViewModels/PresetManagerViewModel.cs
-using System;
+
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Windows.Input; // For ICommand (if adding commands here)
-using BorderlessWindowApp.Models; // Assuming DisplayPreset is here
+using System.Windows.Input;
+// For ICommand (if adding commands here)
+
+// Assuming DisplayPreset is here
 
 
-namespace BorderlessWindowApp.ViewModels
+namespace BorderlessWindowApp.ViewModels.Display
 {
     public class PresetManagerViewModel : INotifyPropertyChanged
     {

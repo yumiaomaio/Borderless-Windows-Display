@@ -1,10 +1,9 @@
 ﻿using System.Windows.Controls;
-using BorderlessWindowApp.Services.Display;
 using BorderlessWindowApp.Services.Display.implement;
-using BorderlessWindowApp.ViewModels;
+using BorderlessWindowApp.ViewModels.Display;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace BorderlessWindowApp
+namespace BorderlessWindowApp.Views
 {
     public partial class DisplaySettingsView : UserControl
     {

@@ -5,13 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BorderlessWindowApp"
         xmlns:views="clr-namespace:BorderlessWindowApp"
+        xmlns:views1="clr-namespace:BorderlessWindowApp.Views"
         mc:Ignorable="d"
         Title="主窗口 - 带标签页" Height="620" Width="480" 
         WindowStartupLocation="CenterScreen">
     <Grid>
         <TabControl Margin="5"> 
             <TabItem Header="🖥️ 显示设置">
-                <views:DisplaySettingsView /> 
+                <views1:DisplaySettingsView /> 
             </TabItem>
 
             <TabItem Header="⚙️ 其他设置">

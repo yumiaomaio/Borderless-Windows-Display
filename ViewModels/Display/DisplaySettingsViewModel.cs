@@ -1,18 +1,17 @@
 ﻿// File: ViewModels/DisplaySettingsViewModel.cs
 
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+using BorderlessWindowApp.Interop.Enums.Display;
 using BorderlessWindowApp.Services.Display;
 using BorderlessWindowApp.Services.Display.Models;
-using BorderlessWindowApp.Interop.Enums.Display; // For Formatting
 
-namespace BorderlessWindowApp.ViewModels
+// For Formatting
+
+namespace BorderlessWindowApp.ViewModels.Display
 {
     public class DisplaySettingsViewModel : INotifyPropertyChanged
     {
@@ -460,7 +459,7 @@ namespace BorderlessWindowApp.ViewModels
         }
 
 
-        // --- Formatting Helpers (Move to Utils or Models) ---
+        // --- Formatting Helpers (Move to Utils or Display) ---
         private string FormatHeaderDisplayName(DisplayDeviceInfo deviceInfo)
         {
             /* ... */

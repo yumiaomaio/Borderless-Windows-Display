@@ -1,10 +1,8 @@
-﻿
+﻿using BorderlessWindowApp.Services.Display.Models;
 
-using System.Threading.Tasks;
-using BorderlessWindowApp.Services.Display.Models;
-using BorderlessWindowApp.Models; // For DisplayPreset
+// For DisplayPreset
 
-namespace BorderlessWindowApp.ViewModels
+namespace BorderlessWindowApp.ViewModels.Display
 {
     public interface IDisplaySettingsApplicator
     {

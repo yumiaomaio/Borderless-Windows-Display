@@ -13,4 +13,5 @@ namespace BorderlessWindowApp.Models
         public WindowExStyles ExStyle { get; set; }
         public bool IsVisible { get; set; }
     }
+    
 }

@@ -7,7 +7,7 @@ using BorderlessWindowApp.Services.Display;
 using BorderlessWindowApp.Services.Display.Models;
 using BorderlessWindowApp.Views;
 
-namespace BorderlessWindowApp.ViewModels
+namespace BorderlessWindowApp.ViewModels.Display
 {
     public class DeviceSelectorViewModel : INotifyPropertyChanged
     {
