@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE;TEST_CLI;DEBUG;NET;NET8_0;NETCOREAPP
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\App.xaml
-2-1849311314
+3-1289420060
 
-62-1713299631
+63-733523926
 2121033416674
-DisplaySettingsView.xaml;MainWindow.xaml;
+DisplaySettingsView.xaml;MainWindow.xaml;Views\DisplayPopupWindow.xaml;
 
 False
 

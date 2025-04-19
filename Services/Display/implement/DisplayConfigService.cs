@@ -52,7 +52,8 @@ namespace BorderlessWindowApp.Services.Display.implement
                     DisplayDeviceModeFields.PelsWidth |
                     DisplayDeviceModeFields.PelsHeight |
                     DisplayDeviceModeFields.DisplayFrequency |
-                    DisplayDeviceModeFields.BitsPerPel)
+                    DisplayDeviceModeFields.BitsPerPel),
+                dmDisplayOrientation = (uint)request.Orientation.Value
             };
 
             if (request.PositionX.HasValue && request.PositionY.HasValue)

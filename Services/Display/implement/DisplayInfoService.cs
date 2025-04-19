@@ -102,7 +102,8 @@ namespace BorderlessWindowApp.Services.Display.implement
         
         
         #region DisplayConfig
-        private (string? DeviceName, string? DeviceString, POINTL? Position)? TryMapSourceIdToDeviceName(LUID adapterId, uint sourceId)
+        private (string? DeviceName, string? DeviceString, POINTL? Position,uint height,uint Width)? 
+            GetSourceInfo_MapDeviceName(LUID adapterId, uint sourceId)
         {
             // 先获取目标 source 的位置（position）
             uint pathCount = 0, modeCount = 0;
@@ -112,7 +113,8 @@ namespace BorderlessWindowApp.Services.Display.implement
             NativeDisplayApi.QueryDisplayConfig(DisplayConfigConstants.QDC_ONLY_ACTIVE_PATHS, ref pathCount, paths, ref modeCount, modes, IntPtr.Zero);
 
             POINTL? sourcePos = null;
-
+            uint Height = 0;
+            uint Width = 0;
             foreach (var mode in modes)
             {
                 if (mode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.SOURCE &&
@@ -121,6 +123,8 @@ namespace BorderlessWindowApp.Services.Display.implement
                     mode.id == sourceId)
                 {
                     sourcePos = mode.sourceMode.position;
+                    Height = mode.sourceMode.height;
+                    Width = mode.sourceMode.width;
                     break;
                 }
             }
@@ -156,7 +160,7 @@ namespace BorderlessWindowApp.Services.Display.implement
                 d.cb = Marshal.SizeOf(d);
             }
             // Return the found GDI names (or null if not found) AND the position from QueryDisplayConfig
-            return (mappedDeviceName, mappedDeviceString, sourcePos);
+            return (mappedDeviceName, mappedDeviceString, sourcePos,Height,Width);
         }
 
         private DisplayTargetDetails? GetDisplayTargetInfo(LUID adapterId, uint targetId)
@@ -230,7 +234,7 @@ namespace BorderlessWindowApp.Services.Display.implement
                 }
 
                 // 尝试从 GDI 映射 deviceName 和 deviceString
-                var mapping = TryMapSourceIdToDeviceName(adapterId, sourceId);
+                var mapping = GetSourceInfo_MapDeviceName(adapterId, sourceId);
                 if (mapping.HasValue)
                 {
                     display.DeviceName = mapping.Value.DeviceName;
@@ -240,10 +244,11 @@ namespace BorderlessWindowApp.Services.Display.implement
                         display.PositionX = mapping.Value.Position.Value.x;
                         display.PositionY = mapping.Value.Position.Value.y;
                     }
+                    display.Height = mapping.Value.height;
+                    display.Width = mapping.Value.Width;
                 }
                 results.Add(display);
             }
-
             return results;
         }
 

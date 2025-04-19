@@ -15,10 +15,20 @@ public class DisplayDeviceInfo
     public DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY OutputTechnology { get; set; }
     public int PositionX { get; set; }
     public int PositionY { get; set; }
+    public uint Width { get; set; } 
+    public uint Height { get; set; } 
     public bool IsAvailable { get; set; }
+    public string Identity { get => FormatIdentity(this); }
     public string ComboBoxDisplayText { get => FormatComboBoxItemText(this); }
 
     #region Tools
+    private string FormatIdentity(DisplayDeviceInfo deviceInfo)
+    {
+        if (deviceInfo == null) return "Invalid Device";
+        string displayNum = ExtractDisplayNumber(deviceInfo.DeviceName);
+        // Format: [SourceId] [DisplayNum] FriendlyName
+        return $"[{deviceInfo.SourceId}][{displayNum}]\r\n{deviceInfo.FriendlyName ?? "Unknown"}";
+    }
     private string FormatComboBoxItemText(DisplayDeviceInfo deviceInfo)
     {
         if (deviceInfo == null) return "Invalid Device";
