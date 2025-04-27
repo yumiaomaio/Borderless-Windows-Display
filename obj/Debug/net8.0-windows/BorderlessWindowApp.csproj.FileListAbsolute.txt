@@ -56,8 +56,6 @@ C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\bin
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\bin\Debug\net8.0-windows\System.Text.Json.dll
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\bin\Debug\net8.0-windows\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\BorderlessWindowApp.csproj.AssemblyReference.cache
-C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\DisplaySettingsView.baml
-C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\DisplaySettingsView.g.cs
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Borderle.33FB172D.Up2Date
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\MainWindow.g.cs
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
@@ -66,3 +64,5 @@ C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\App.baml
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Views\DisplayPopupWindow.baml
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Views\DisplayPopupWindow.g.cs
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Views\DisplaySettingsView.g.cs
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Views\DisplaySettingsView.baml

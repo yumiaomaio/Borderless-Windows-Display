@@ -229,7 +229,10 @@
                         <TextBlock Text="刷新率" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4" />
                         <ComboBox ItemsSource="{Binding RefreshRates}"
                                   SelectedItem="{Binding SelectedRefreshRate, Mode=TwoWay}" />
-
+                        <TextBlock Text="方向" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4"/>
+                        <ComboBox ItemsSource="{Binding AvailableOrientations}"
+                                  SelectedItem="{Binding SelectedOrientation, Mode=TwoWay}"
+                                  DisplayMemberPath="Name"  IsEnabled="{Binding DeviceSelector.SelectedDevice, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=Invert}"/>
                         <TextBlock Text="DPI 缩放" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4" />
                         <Grid>
                             <Grid.ColumnDefinitions>

@@ -76,5 +76,12 @@ namespace BorderlessWindowApp.Interop
         public static extern int DisplayConfigGetDeviceInfo(
             ref DISPLAYCONFIG_TARGET_DEVICE_NAME request);
 
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern bool EnumDisplaySettingsEx(
+            string? lpszDeviceName,
+            int iModeNum, // Use ENUM_CURRENT_SETTINGS or ENUM_REGISTRY_SETTINGS or mode index
+            ref DEVMODE lpDevMode,
+            int dwFlags); // EDS_RAWMODE can be useful
+        
     }
 }

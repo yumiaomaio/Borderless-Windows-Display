@@ -78,24 +78,35 @@ namespace BorderlessWindowApp.Services.Display.implement
         /// </summary>
         public DisplayModeInfo? GetCurrentMode(string deviceName)
         {
-            DEVMODE devMode = new() { dmSize = (ushort)Marshal.SizeOf(typeof(DEVMODE)) };
-            const int ENUM_CURRENT_SETTINGS = -1;
+            DEVMODE devMode = default;
+            // Initialize dmSize using Marshal.SizeOf with *your* DEVMODE struct
+            devMode.dmSize = (ushort)Marshal.SizeOf<DEVMODE>();
 
-            if (NativeDisplayApi.EnumDisplaySettings(deviceName, ENUM_CURRENT_SETTINGS, ref devMode))
+            if (NativeDisplayApi.EnumDisplaySettingsEx(deviceName, IModeNum.ENUM_CURRENT_SETTINGS, ref devMode, 0))
             {
-                var mode = new DisplayModeInfo
+                // Map the uint dmDisplayOrientation to your DisplayOrientation enum
+                DisplayOrientation orientation = devMode.dmDisplayOrientation switch
                 {
+                    DisplayOrientationConstants.DMDO_90 => DisplayOrientation.Portrait,
+                    DisplayOrientationConstants.DMDO_180 => DisplayOrientation.LandscapeFlipped,
+                    DisplayOrientationConstants.DMDO_270 => DisplayOrientation.PortraitFlipped,
+                    _ => DisplayOrientation.Landscape, // Default or DMDO_DEFAULT
+                };
+
+                return new DisplayModeInfo
+                {
+                    // Cast uint fields from DEVMODE to int for DisplayModeInfo
                     Width = (int)devMode.dmPelsWidth,
                     Height = (int)devMode.dmPelsHeight,
-                    RefreshRate = (int)devMode.dmDisplayFrequency
+                    RefreshRate = (int)devMode.dmDisplayFrequency,
+                    Orientation = orientation
                 };
-                _logger.LogInformation("Current mode for {Device}: {Width}x{Height} @ {Hz}Hz", deviceName, mode.Width,
-                    mode.Height, mode.RefreshRate);
-                return mode;
             }
-
-            _logger.LogWarning("Failed to get current mode for device: {Device}", deviceName);
-            return null;
+            else
+            {
+                Console.WriteLine($"Error getting current settings for device {deviceName}: {Marshal.GetLastWin32Error()}");
+                return null;
+            }
         }
 
         #endregion
@@ -256,9 +267,7 @@ namespace BorderlessWindowApp.Services.Display.implement
         
         public void TestDisplayTargets()
         {
-
             GetAllDeviceNames();
-
         }
         
     }

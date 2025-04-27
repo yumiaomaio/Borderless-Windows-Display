@@ -8,6 +8,7 @@ namespace BorderlessWindowApp.ViewModels.Display
         private readonly IDisplayConfigService _configService;
         private readonly IDisplayScaleService _scaleService;
         private readonly IDisplayInfoService _infoService; // Needed for compatibility checks
+        private IDisplaySettingsApplicator _displaySettingsApplicatorImplementation;
 
         public DisplaySettingsApplicator(
             IDisplayConfigService configService,
@@ -19,24 +20,42 @@ namespace BorderlessWindowApp.ViewModels.Display
             _infoService = infoService ?? throw new ArgumentNullException(nameof(infoService)); // Assign InfoService
         }
 
-        public async Task<bool> ApplySettingsAsync(DisplayDeviceInfo device, DisplayModeInfo resolution, int refreshRate, uint dpi)
+        // --- MODIFIED ApplySettingsAsync Method ---
+        /// <summary>
+        /// Applies display settings using a DisplayConfigRequest object and a specific DPI value.
+        /// </summary>
+        /// <param name="device">The target device information (needed for scaling).</param>
+        /// <param name="request">The configuration request containing resolution, refresh rate, orientation, etc.</param>
+        /// <param name="dpi">The target DPI scaling value.</param>
+        /// <returns>True if both config and scaling applied successfully (or didn't need changing), false otherwise.</returns>
+        public async Task<bool> ApplySettingsAsync(DisplayDeviceInfo device, DisplayConfigRequest request, uint dpi)
         {
-            if (device?.DeviceName == null || resolution == null || refreshRate <= 0)
-                return false;
-
-            Console.WriteLine($"Applicator: Applying settings to {device.FriendlyName}: {resolution.Width}x{resolution.Height}, {refreshRate}Hz, {dpi}%");
-
-            // Apply Config (Consider making service async if possible)
-            var configRequest = new DisplayConfigRequest
+            // Validate input parameters
+            if (device == null || request == null || string.IsNullOrEmpty(request.DeviceName))
             {
-                DeviceName = device.DeviceName,
-                Width = resolution.Width,
-                Height = resolution.Height,
-                RefreshRate = refreshRate
-            };
-            bool configApplied = _configService.ApplyDisplayConfiguration(configRequest);
+                 Console.WriteLine("Applicator Error: ApplySettingsAsync received invalid device or request.");
+                 return false;
+            }
 
-            // Apply Scaling
+            Console.WriteLine($"Applicator: Applying request to {device.FriendlyName ?? request.DeviceName}: " +
+                              $"{request.Width}x{request.Height}, {request.RefreshRate}Hz, Orientation={request.Orientation?.ToString() ?? "Unchanged"}, DPI={dpi}%");
+
+            // 1. Apply Configuration using the provided request object
+            //    ASSUMPTION: _configService.ApplyDisplayConfiguration implementation has been updated
+            //    to correctly handle all properties within DisplayConfigRequest, including Orientation.
+            bool configApplied = false;
+            try
+            {
+                configApplied = _configService.ApplyDisplayConfiguration(request);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Applicator: Error calling ApplyDisplayConfiguration for {request.DeviceName}: {ex.Message}");
+                configApplied = false; // Ensure it's false on exception
+            }
+
+
+            // 2. Apply Scaling using the provided device info and dpi value
             bool scaleApplied = false;
             try
             {
@@ -46,26 +65,30 @@ namespace BorderlessWindowApp.ViewModels.Display
                  {
                      scaleApplied = _scaleService.SetScaling(device.AdapterId, device.SourceId, dpi);
                  } else if (!currentScaling.IsInitialized) {
-                     Console.WriteLine("Warning (Applicator): Could not get current scaling info. Attempting to set DPI anyway.");
+                     // Log a warning but still attempt to set DPI if info wasn't initialized
+                     Console.WriteLine($"Applicator Warning: Could not get current scaling info for {device.FriendlyName}. Attempting to set DPI {dpi}% anyway.");
                      scaleApplied = _scaleService.SetScaling(device.AdapterId, device.SourceId, dpi);
                  } else {
-                     scaleApplied = true; // DPI was already correct
+                     scaleApplied = true; // DPI was already correct, consider it successful in terms of matching target
                  }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Applicator: Error applying scaling: {ex.Message}");
-                // Do not count scaleApplied as true if exception occurred
-                scaleApplied = false;
+                Console.WriteLine($"Applicator: Error applying scaling ({dpi}%) to {device.FriendlyName}: {ex.Message}");
+                scaleApplied = false; // Ensure it's false on exception
             }
 
-            // Consider success only if both operations were successful OR didn't need to change
-            // For simplicity here, we check if the intended operations succeeded.
-            // A more robust check might re-query the actual state.
+            // 3. Determine overall success
+            //    Consider success only if both config and scaling were successfully applied
+            //    (or if scaling didn't need changing and config was applied).
             bool overallSuccess = configApplied && scaleApplied;
             Console.WriteLine($"Applicator: ApplySettings result for {device.FriendlyName} - ConfigApplied={configApplied}, ScaleApplied={scaleApplied}, OverallSuccess={overallSuccess}");
-            return overallSuccess;
 
+            // Optional: Add a small delay AFTER applying settings before returning,
+            // allowing the system potentially more time to settle before the UI re-queries state.
+            // await Task.Delay(100); // e.g., 100ms delay
+
+            return overallSuccess;
         }
 
         public async Task<bool> ApplyPresetAsync(DisplayDeviceInfo device, DisplayPreset preset)
@@ -99,16 +122,18 @@ namespace BorderlessWindowApp.ViewModels.Display
                 targetRefreshRate = bestAvailableRate; // Use supported rate
             }
 
-            // 3. Create a temporary DisplayModeInfo for ApplySettingsAsync
-            var targetResolutionInfo = new DisplayModeInfo
+            // 3. Create the DisplayConfigRequest from the preset and determined rate
+            var request = new DisplayConfigRequest
             {
+                DeviceName = device.DeviceName,
                 Width = preset.Width,
                 Height = preset.Height,
-                RefreshRate = targetRefreshRate // Use the determined rate
+                RefreshRate = targetRefreshRate,
+                Orientation = null
             };
 
-            // 4. Call the specific ApplySettingsAsync method
-            return await ApplySettingsAsync(device, targetResolutionInfo, targetRefreshRate, preset.Dpi);
+            // 4. Call the modified ApplySettingsAsync, passing the request and preset DPI
+            return await ApplySettingsAsync(device, request, preset.Dpi);
         }
     }
 }

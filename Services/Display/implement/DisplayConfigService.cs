@@ -83,7 +83,7 @@ namespace BorderlessWindowApp.Services.Display.implement
                 flags,
                 IntPtr.Zero);
 
-            if (result != DisplayConstants.DISP_CHANGE_SUCCESSFUL)
+            if (result != ChangeDisplayConstants.DISP_CHANGE_SUCCESSFUL)
             {
                 _logger.LogWarning("ChangeDisplaySettingsEx failed with code {Code} for device {Device}", result, deviceName);
                 return false;

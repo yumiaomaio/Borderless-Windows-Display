@@ -27,6 +27,7 @@ namespace BorderlessWindowApp.ViewModels.Display
         // --- State specific to the selected device's *details* ---
         public ObservableCollection<DisplayModeInfo> Resolutions { get; } = new();
         public ObservableCollection<int> RefreshRates { get; } = new();
+        public ObservableCollection<DisplayOrientationItem> AvailableOrientations { get; } = new();
         
         private DisplayModeInfo? _selectedResolution;
         public DisplayModeInfo? SelectedResolution
@@ -43,7 +44,6 @@ namespace BorderlessWindowApp.ViewModels.Display
                 });
             }
         }
-
         private int _selectedRefreshRate;
         public int SelectedRefreshRate
         {
@@ -54,8 +54,16 @@ namespace BorderlessWindowApp.ViewModels.Display
                     () => (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged());
             } // Only update Apply command state
         }
-
         private uint _dpi = 100;
+        
+        private DisplayOrientationItem? _selectedOrientation;
+        public DisplayOrientationItem? SelectedOrientation
+        {
+            get => _selectedOrientation;
+            // Update Apply command when selection changes
+            set { SetProperty(ref _selectedOrientation, value, () => (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged()); }
+        }
+        
         public uint Dpi
         {
             get => _dpi;
@@ -66,7 +74,6 @@ namespace BorderlessWindowApp.ViewModels.Display
                 SetProperty(ref _dpi, clampedValue, () => (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged());
             }
         }
-
 
         private uint _minDpi = 100;
         public uint MinDpi
@@ -147,7 +154,8 @@ namespace BorderlessWindowApp.ViewModels.Display
             SavePresetCommand = new RelayCommand(async () => await SavePresetAsync(), CanSavePreset);
             ApplyPresetCommand = new RelayCommand(async () => await ApplyPresetAsync(), CanApplyPreset);
             RestoreDefaultCommand = new RelayCommand(RestoreDefault, CanRestoreDefault);
-
+            // Populate orientation options (could also be done in LoadDetails)
+            PopulateOrientationOptions();
             // Initial Load (delegated)
             _ = LoadInitialDataAsync();
         }
@@ -159,6 +167,15 @@ namespace BorderlessWindowApp.ViewModels.Display
             await PresetManager.LoadPresetsAsync(); // Load presets via manager
             DeviceSelector.LoadDeviceList(); // Load devices via selector
             // Device change handler will load initial details if a device is selected
+        }
+        
+        private void PopulateOrientationOptions()
+        {
+            AvailableOrientations.Clear();
+            AvailableOrientations.Add(new DisplayOrientationItem { Name = "Landscape", Value = DisplayOrientation.Landscape });
+            AvailableOrientations.Add(new DisplayOrientationItem { Name = "Portrait", Value = DisplayOrientation.Portrait });
+            AvailableOrientations.Add(new DisplayOrientationItem { Name = "Landscape (flipped)", Value = DisplayOrientation.LandscapeFlipped });
+            AvailableOrientations.Add(new DisplayOrientationItem { Name = "Portrait (flipped)", Value = DisplayOrientation.PortraitFlipped });
         }
         
         private void DeviceSelector_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -184,6 +201,7 @@ namespace BorderlessWindowApp.ViewModels.Display
                 // Note: DeletePresetCommand is inside PresetManagerViewModel, it handles its own CanExecute update.
             }
         }
+        
         
 
         // --- Core Logic Methods (Simplified) ---
@@ -263,6 +281,7 @@ namespace BorderlessWindowApp.ViewModels.Display
                                     ?? Resolutions.FirstOrDefault();
             SelectedResolution = initialResolution; // This triggers UpdateRefreshRatesAndCommands
             OnPropertyChanged(nameof(SelectedResolution)); // Notify UI
+            SelectedOrientation = AvailableOrientations.FirstOrDefault(o => o.Value == currentMode?.Orientation);
             
             // 2. Update Refresh Rates based on the just-set resolution
             UpdateRefreshRatesForSelectedResolution(currentMode?.RefreshRate); // Pass current rate
@@ -294,7 +313,6 @@ namespace BorderlessWindowApp.ViewModels.Display
             (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (SavePresetCommand as RelayCommand)?.RaiseCanExecuteChanged(); // Save preset depends on valid Res/Rate
         }
-
 
         private void UpdateRefreshRatesForSelectedResolution(int? targetRefreshRate = null)
         {
@@ -358,31 +376,40 @@ namespace BorderlessWindowApp.ViewModels.Display
         }
         
         // --- Command Implementations (Delegating) ---
-
+        
         private bool CanApplySettings() => DeviceSelector.SelectedDevice != null && SelectedResolution != null &&
                                            SelectedRefreshRate > 0;
-
         private async Task ApplySettingsAsync()
         {
+            // Use SelectedOrientation.Value when calling applicator
             if (!CanApplySettings()) return;
             var device = DeviceSelector.SelectedDevice!;
             var resolution = SelectedResolution!;
+            var orientation = SelectedOrientation!.Value; // Get enum value
 
-            bool success = await _applicator.ApplySettingsAsync(device, resolution, SelectedRefreshRate, Dpi);
+            Console.WriteLine($"MainVM: Applying settings to {device.FriendlyName}: {resolution.Width}x{resolution.Height}, {SelectedRefreshRate}Hz, {Dpi}%, {orientation}");
 
-            if (success)
+            var request = new DisplayConfigRequest
             {
+                DeviceName = device.DeviceName!,
+                Width = resolution.Width,
+                Height = resolution.Height,
+                RefreshRate = SelectedRefreshRate,
+                Orientation = orientation // Set the orientation in the request
+                // Position, Primary etc. could also be set here if needed
+            };
+            
+            // Applicator needs modification
+            bool success = await _applicator.ApplySettingsAsync(device,request,Dpi); 
+
+            if (success) {
                 Console.WriteLine("MainVM: ApplySettings success. Reloading details...");
                 LoadDisplayDetailsForSelectedDevice(); // Reload to reflect actual state
-            }
-            else
-            {
+            } else {
                 Console.WriteLine("MainVM: ApplySettings failed.");
                 UpdateStatusColor(true);
-                // TODO: Notify User
             }
         }
-
 
         private bool CanSavePreset() => DeviceSelector.SelectedDevice != null && SelectedResolution != null &&
                                         SelectedRefreshRate > 0;
@@ -443,7 +470,6 @@ namespace BorderlessWindowApp.ViewModels.Display
             }
         }
 
-
         private bool CanRestoreDefault() => DeviceSelector.SelectedDevice != null;
 
         private void RestoreDefault()
@@ -451,8 +477,7 @@ namespace BorderlessWindowApp.ViewModels.Display
             Console.WriteLine("MainVM: RestoreDefault command executed.");
             LoadDisplayDetailsForSelectedDevice(); // Just reload current settings
         }
-
-
+        
         private void UpdateStatusColor(bool error = false)
         {
             StatusColor = Brushes.LimeGreen; // 正常
@@ -526,6 +551,16 @@ namespace BorderlessWindowApp.ViewModels.Display
 
             // Ensure minimum is at least 100
             return Math.Max(100, roundedMaxDpi);
+        }
+        
+        // Helper class for ComboBox display
+        public class DisplayOrientationItem
+        {
+            public string Name { get; set; } = "";
+            public DisplayOrientation Value { get; set; }
+            // Optional: Override Equals/GetHashCode if needed for SelectedItem comparison
+            public override bool Equals(object? obj) => obj is DisplayOrientationItem item && Value == item.Value;
+            public override int GetHashCode() => Value.GetHashCode();
         }
         
     }
