@@ -8,6 +8,7 @@ using System.Windows.Media;
 using BorderlessWindowApp.Interop.Enums.Display;
 using BorderlessWindowApp.Services.Display;
 using BorderlessWindowApp.Services.Display.Models;
+using BorderlessWindowApp.Services.Presets;
 
 // For Formatting
 
@@ -411,35 +412,47 @@ namespace BorderlessWindowApp.ViewModels.Display
             }
         }
 
-        private bool CanSavePreset() => DeviceSelector.SelectedDevice != null && SelectedResolution != null &&
-                                        SelectedRefreshRate > 0;
+        private bool CanSavePreset()
+        {
+            // Also need an orientation selected to save it
+            return DeviceSelector.SelectedDevice != null &&
+                   SelectedResolution != null &&
+                   SelectedRefreshRate > 0 &&
+                   SelectedOrientation != null; // Ensure orientation is selected
+        }
 
         private async Task SavePresetAsync()
         {
+            // Use CanSavePreset check which now includes orientation
             if (!CanSavePreset()) return;
 
+            // Create a temporary preset with the current values including orientation
             var presetValues = new DisplayPreset
             {
-                Width = SelectedResolution!.Width, Height = SelectedResolution.Height,
-                RefreshRate = SelectedRefreshRate, Dpi = Dpi
+                Width = SelectedResolution!.Width, // Null checks done in CanSavePreset
+                Height = SelectedResolution.Height,
+                RefreshRate = SelectedRefreshRate,
+                Dpi = Dpi,
+                Orientation = SelectedOrientation!.Value // Get selected orientation value
             };
 
+            // Check if preset with these exact values (including orientation) already exists
             if (PresetManager.PresetExists(presetValues))
             {
-                Console.WriteLine("Preset with these settings already exists.");
-                /* Inform user */
+                Console.WriteLine("Preset with these exact settings (including orientation) already exists.");
+                // TODO: Inform user
                 return;
             }
 
             // TODO: Get name from user
             string presetName = $"Preset {PresetManager.Presets.Count + 1}";
-            presetValues.Name = presetName;
+            presetValues.Name = presetName; // Assign the actual name
 
+            // Call PresetManager to add and save
             bool success = await PresetManager.AddAndSavePresetAsync(presetValues);
             if (success)
             {
-                // Optional: Select the new preset in the manager's list
-                PresetManager.SelectedPreset = presetValues;
+                PresetManager.SelectedPreset = presetValues; // Select the new preset
             }
             else
             {
@@ -449,14 +462,28 @@ namespace BorderlessWindowApp.ViewModels.Display
 
         private bool CanApplyPreset() => PresetManager.SelectedPreset != null && DeviceSelector.SelectedDevice != null;
 
-        private async Task ApplyPresetAsync()
+        // Inside DisplaySettingsViewModel class
+        private async Task ApplyPresetAsync() // <--- Should be parameterless!
         {
+            // 1. Check if command can execute (redundant check, but safe)
             if (!CanApplyPreset()) return;
-            var device = DeviceSelector.SelectedDevice!;
-            var preset = PresetManager.SelectedPreset!;
 
-            bool success = await _applicator.ApplyPresetAsync(device, preset);
+            // 2. Get the required parameters from child VMs/properties
+            var device = DeviceSelector.SelectedDevice;
+            var preset = PresetManager.SelectedPreset;
 
+            // Defensive check (although CanApplyPreset should cover this)
+            if (device == null || preset == null)
+            {
+                Console.WriteLine("ApplyPresetAsync: Device or Preset is null when trying to apply."); // Assuming _logger exists
+                return;
+            }
+
+            // 3. Call the Applicator service's method, passing the parameters
+            Console.WriteLine("ApplyPresetAsync: Calling applicator service..."); // Assuming _logger exists
+            bool success = await _applicator.ApplyPresetAsync(device, preset); // This call requires 2 parameters
+
+            // 4. Handle the result
             if (success)
             {
                 Console.WriteLine("MainVM: ApplyPreset success. Reloading details...");
@@ -527,6 +554,16 @@ namespace BorderlessWindowApp.ViewModels.Display
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            
+            // Command CanExecute updates
+            if (propertyName == nameof(SelectedResolution) ||
+                propertyName == nameof(SelectedRefreshRate) ||
+                propertyName == nameof(Dpi) ||
+                propertyName == nameof(SelectedOrientation)) // Add Orientation change check
+            {
+                (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (SavePresetCommand as RelayCommand)?.RaiseCanExecuteChanged(); // Save command depends on orientation now
+            }
         }
 
         // Helper to reduce boilerplate

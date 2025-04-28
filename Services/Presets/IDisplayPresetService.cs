@@ -1,4 +1,4 @@
-﻿namespace BorderlessWindowApp.ViewModels.Display;
+﻿namespace BorderlessWindowApp.Services.Presets;
 
 
     public interface IDisplayPresetService

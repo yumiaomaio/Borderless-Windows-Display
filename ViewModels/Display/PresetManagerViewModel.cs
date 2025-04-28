@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using BorderlessWindowApp.Services.Presets;
+
 // For ICommand (if adding commands here)
 
 // Assuming DisplayPreset is here

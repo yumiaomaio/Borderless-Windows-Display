@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using BorderlessWindowApp.Interop.Enums.Display;
 
-namespace BorderlessWindowApp.ViewModels.Display
+namespace BorderlessWindowApp.Services.Presets
 {
     public class DisplayPreset : INotifyPropertyChanged
     {
@@ -12,14 +13,25 @@ namespace BorderlessWindowApp.ViewModels.Display
             set { _name = value; OnPropertyChanged(); }
         }
 
-        // Store only the core display settings
+        // Store core display settings including Orientation
         public int Width { get; set; }
         public int Height { get; set; }
         public int RefreshRate { get; set; }
         public uint Dpi { get; set; }
+        public DisplayOrientation Orientation { get; set; } = DisplayOrientation.Landscape; // Add Orientation
 
-        // Calculated property for display purposes
-        public string Parameters => $"{Width}x{Height}, {RefreshRate}Hz, {Dpi}% DPI";
+        // Updated Parameters property to include orientation abbreviation
+        public string Parameters => $"{Width}x{Height}, {RefreshRate}Hz, {Dpi}% DPI, {FormatOrientation(Orientation)}";
+
+        // Helper for parameter string
+        private static string FormatOrientation(DisplayOrientation orientation) => orientation switch
+        {
+            DisplayOrientation.Portrait => "Portrait",
+            DisplayOrientation.LandscapeFlipped => "Land (Flip)",
+            DisplayOrientation.PortraitFlipped => "Port (Flip)",
+            _ => "Landscape",
+        };
+
 
         // --- INotifyPropertyChanged Implementation ---
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -29,19 +41,21 @@ namespace BorderlessWindowApp.ViewModels.Display
         }
         public override string ToString() => Name;
 
-        // Optional: Equals and GetHashCode for duplicate checking
+        // Updated Equals and GetHashCode to include Orientation
         public override bool Equals(object? obj)
         {
             return obj is DisplayPreset preset &&
                    Width == preset.Width &&
                    Height == preset.Height &&
                    RefreshRate == preset.RefreshRate &&
-                   Dpi == preset.Dpi;
+                   Dpi == preset.Dpi &&
+                   Orientation == preset.Orientation; // Compare Orientation
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Width, Height, RefreshRate, Dpi);
+            // Include Orientation in hash code
+            return HashCode.Combine(Width, Height, RefreshRate, Dpi, Orientation);
         }
     }
 }

@@ -1,11 +1,9 @@
-﻿// File: Services/Presets/DisplayPresetService.cs
-
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 
 // Reference the preset model
 
-namespace BorderlessWindowApp.ViewModels.Display
+namespace BorderlessWindowApp.Services.Presets
 {
     public class DisplayPresetService : IDisplayPresetService
     {

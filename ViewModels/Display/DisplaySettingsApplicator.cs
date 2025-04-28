@@ -1,5 +1,6 @@
 ﻿using BorderlessWindowApp.Services.Display;
 using BorderlessWindowApp.Services.Display.Models;
+using BorderlessWindowApp.Services.Presets;
 
 namespace BorderlessWindowApp.ViewModels.Display
 {
@@ -129,7 +130,7 @@ namespace BorderlessWindowApp.ViewModels.Display
                 Width = preset.Width,
                 Height = preset.Height,
                 RefreshRate = targetRefreshRate,
-                Orientation = null
+                Orientation = preset.Orientation
             };
 
             // 4. Call the modified ApplySettingsAsync, passing the request and preset DPI
