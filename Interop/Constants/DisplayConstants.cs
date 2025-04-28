@@ -10,6 +10,11 @@ public static class ChangeDisplayConstants
     public const int DISP_CHANGE_BADFLAGS = -4;
     public const int DISP_CHANGE_BADPARAM = -5;
     public const int DISP_CHANGE_BADDUALVIEW = -6;
+    
+    public const int CDS_UPDATEREGISTRY = 0x00000001;
+    public const int CDS_GLOBAL = 0x00000008; // Apply settings to all users
+    public const int CDS_SET_PRIMARY = 0x00000010;
+    public const int CDS_NORESET = 0x10000000; // Don't restart (usually desired)
 }
 public static class DisplayOrientationConstants
 {

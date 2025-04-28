@@ -7,5 +7,6 @@ public enum DisplayDeviceModeFields : uint
     BitsPerPel = 0x00040000,
     PelsWidth = 0x00080000,
     PelsHeight = 0x00100000,
-    DisplayFrequency = 0x00400000
+    DisplayFrequency = 0x00400000,
+    DisplayOrientation = 0x00000080
 }

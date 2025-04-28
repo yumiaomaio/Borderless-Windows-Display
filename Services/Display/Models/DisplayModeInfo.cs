@@ -1,4 +1,5 @@
-﻿namespace BorderlessWindowApp.Services.Display.Models
+﻿using BorderlessWindowApp.Interop.Enums.Display;
+namespace BorderlessWindowApp.Services.Display.Models
 {
     public class DisplayModeInfo
     {
