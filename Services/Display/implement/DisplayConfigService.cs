@@ -17,7 +17,7 @@ namespace BorderlessWindowApp.Services.Display.implement
 
         public DisplayConfigService(ILogger<DisplayConfigService> logger)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>

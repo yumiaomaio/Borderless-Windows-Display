@@ -17,7 +17,7 @@ namespace BorderlessWindowApp.Services.Display.implement
 
         public DisplayInfoService(ILogger<DisplayInfoService> logger)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         #region EnumDisplay
@@ -65,8 +65,7 @@ namespace BorderlessWindowApp.Services.Display.implement
                     RefreshRate = (int)devMode.dmDisplayFrequency
                 };
                 modes.Add(mode);
-                _logger.LogDebug("Mode found for {Device}: {Width}x{Height} @ {Hz}Hz", deviceName, mode.Width,
-                    mode.Height, mode.RefreshRate);
+                //_logger.LogDebug("Mode found for {Device}: {Width}x{Height} @ {Hz}Hz", deviceName, mode.Width,mode.Height, mode.RefreshRate);
             }
 
             _logger.LogInformation("Total display modes found for {Device}: {Count}", deviceName, modes.Count);
@@ -104,7 +103,7 @@ namespace BorderlessWindowApp.Services.Display.implement
             }
             else
             {
-                Console.WriteLine($"Error getting current settings for device {deviceName}: {Marshal.GetLastWin32Error()}");
+                _logger.LogWarning("Error getting current settings for device {DeviceName}. Error code: {ErrorCode}", deviceName, Marshal.GetLastWin32Error());
                 return null;
             }
         }
@@ -116,6 +115,8 @@ namespace BorderlessWindowApp.Services.Display.implement
         private (string? DeviceName, string? DeviceString, POINTL? Position,uint height,uint Width)? 
             GetSourceInfo_MapDeviceName(LUID adapterId, uint sourceId)
         {
+            _logger.LogInformation("[GetSourceInfo_MapDeviceName] Starting GDI mapping for adapterId={AdapterId}, sourceId={SourceId}", adapterId, sourceId);
+
             // 先获取目标 source 的位置（position）
             uint pathCount = 0, modeCount = 0;
             NativeDisplayApi.GetDisplayConfigBufferSizes(DisplayConfigConstants.QDC_ONLY_ACTIVE_PATHS, ref pathCount, ref modeCount);
@@ -140,7 +141,11 @@ namespace BorderlessWindowApp.Services.Display.implement
                 }
             }
 
-            if (sourcePos == null) return null;
+            if (sourcePos == null)
+            {
+                _logger.LogWarning("[GetSourceInfo_MapDeviceName] No matching position found for adapterId={AdapterId}, sourceId={SourceId}", adapterId, sourceId);
+                return null;
+            }
 
             DISPLAY_DEVICE d = new();
             d.cb = Marshal.SizeOf(d);
@@ -163,6 +168,7 @@ namespace BorderlessWindowApp.Services.Display.implement
                         // Found a match
                         mappedDeviceName = d.DeviceName;
                         mappedDeviceString = d.DeviceString;
+                        _logger.LogInformation("[GetSourceInfo_MapDeviceName] Found matching GDI device: {DeviceName} at position ({X}, {Y})", d.DeviceName, devMode.dmPositionX, devMode.dmPositionY);
                         break; // Stop searching once a match is found
                     }
                 }
@@ -170,8 +176,14 @@ namespace BorderlessWindowApp.Services.Display.implement
                 // Reset cb size for the next call, as EnumDisplayDevices might modify it.
                 d.cb = Marshal.SizeOf(d);
             }
+
+            if (mappedDeviceName == null)
+            {
+                _logger.LogWarning("[GetSourceInfo_MapDeviceName] No matching GDI device found for adapterId={AdapterId}, sourceId={SourceId}", adapterId, sourceId);
+            }
+
             // Return the found GDI names (or null if not found) AND the position from QueryDisplayConfig
-            return (mappedDeviceName, mappedDeviceString, sourcePos,Height,Width);
+            return (mappedDeviceName, mappedDeviceString, sourcePos, Height, Width);
         }
 
         private DisplayTargetDetails? GetDisplayTargetInfo(LUID adapterId, uint targetId)

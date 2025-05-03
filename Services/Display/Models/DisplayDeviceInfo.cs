@@ -27,7 +27,7 @@ public class DisplayDeviceInfo
         if (deviceInfo == null) return "Invalid Device";
         string displayNum = ExtractDisplayNumber(deviceInfo.DeviceName);
         // Format: [SourceId] [DisplayNum] FriendlyName
-        return $"[{deviceInfo.SourceId}][{displayNum}]\r\n{deviceInfo.FriendlyName ?? "Unknown"}";
+        return $"[D{displayNum}-S{deviceInfo.SourceId}-T{deviceInfo.TargetId}]\r\n{deviceInfo.FriendlyName ?? "Unknown"}";
     }
     private string FormatComboBoxItemText(DisplayDeviceInfo deviceInfo)
     {
@@ -35,7 +35,7 @@ public class DisplayDeviceInfo
         string displayNum = ExtractDisplayNumber(deviceInfo.DeviceName);
         string tech = FormatOutputTechnology(deviceInfo.OutputTechnology);
         // Format: [SourceId] [DisplayNum] FriendlyName (OutputTech)
-        return $"[{deviceInfo.SourceId}] [{displayNum}] {deviceInfo.FriendlyName ?? "Unknown"} ({tech})";
+        return $"[D{displayNum}-S{deviceInfo.SourceId}-T{deviceInfo.TargetId}] {deviceInfo.FriendlyName ?? "Unknown"} ({tech})";
     }
     private string FormatOutputTechnology(DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY tech)
     {

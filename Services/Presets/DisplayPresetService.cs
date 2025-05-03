@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
+using BorderlessWindowApp.Services.Display.implement;
+using Microsoft.Extensions.Logging;
 
 // Reference the preset model
 
@@ -9,9 +11,11 @@ namespace BorderlessWindowApp.Services.Presets
     {
         private readonly string _presetsFilePath;
         private readonly JsonSerializerOptions _jsonOptions;
-
-        public DisplayPresetService()
+        private readonly ILogger<DisplayPresetService> _logger;
+        public DisplayPresetService(ILogger<DisplayPresetService> logger)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            
             // Define where to store the presets file (e.g., %LOCALAPPDATA%\YourAppName)
             string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string appFolder = Path.Combine(appDataFolder, "BorderlessWindowApp"); // Use your actual app name

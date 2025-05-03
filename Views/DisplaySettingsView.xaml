@@ -3,8 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:BorderlessWindowApp"
-             xmlns:models="clr-namespace:BorderlessWindowApp.Services.Display.Models"
+             xmlns:helpers="clr-namespace:BorderlessWindowApp.Helpers"
              mc:Ignorable="d"
              d:DesignHeight="550" d:DesignWidth="400">
     <UserControl.Resources>
@@ -16,6 +15,7 @@
         <SolidColorBrush x:Key="ButtonForegroundBrush" Color="#FFFFFF" />
         <SolidColorBrush x:Key="SecondaryButtonBackgroundBrush" Color="#E0E0E0" />
         <SolidColorBrush x:Key="SecondaryButtonForegroundBrush" Color="#424242" />
+        <helpers:NullToBooleanConverter x:Key="NullToBooleanConverter" />
 
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextColor}" />
@@ -232,7 +232,7 @@
                         <TextBlock Text="方向" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4"/>
                         <ComboBox ItemsSource="{Binding AvailableOrientations}"
                                   SelectedItem="{Binding SelectedOrientation, Mode=TwoWay}"
-                                  DisplayMemberPath="Name"  IsEnabled="{Binding DeviceSelector.SelectedDevice, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=Invert}"/>
+                                  DisplayMemberPath="Name"  IsEnabled="{Binding DeviceSelector.SelectedDevice, Converter={StaticResource NullToBooleanConverter}}"/>
                         <TextBlock Text="DPI 缩放" Style="{StaticResource LabelTextStyle}" Margin="0,8,0,4" />
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -241,7 +241,7 @@
                             </Grid.ColumnDefinitions>
                             <Slider Minimum="{Binding MinDpi}" Maximum="{Binding MaxDpi}"
                                     Value="{Binding Dpi, Mode=TwoWay}"
-                                    IsEnabled="{Binding SelectedDevice, Converter={StaticResource NullToBooleanConverter}, ConverterParameter=Invert}"
+                                    IsEnabled="{Binding DeviceSelector.SelectedDevice, Converter={StaticResource NullToBooleanConverter}}"
                                     TickFrequency="25" IsSnapToTickEnabled="True"
                                     TickPlacement="BottomRight" >
                             </Slider>

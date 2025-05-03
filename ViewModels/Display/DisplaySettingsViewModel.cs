@@ -1,150 +1,123 @@
-﻿// File: ViewModels/DisplaySettingsViewModel.cs
-
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Windows.Media;
-using BorderlessWindowApp.Interop.Enums.Display;
+using Microsoft.Extensions.Logging;
 using BorderlessWindowApp.Services.Display;
 using BorderlessWindowApp.Services.Display.Models;
+using BorderlessWindowApp.Interop.Enums.Display;
 using BorderlessWindowApp.Services.Presets;
 
-// For Formatting
 
 namespace BorderlessWindowApp.ViewModels.Display
 {
-    public class DisplaySettingsViewModel : INotifyPropertyChanged
+    // Helper class for ComboBox display (keep or move to Models)
+    public class DisplayOrientationItem : INotifyPropertyChanged // Implement INPC if Name can change? Usually not needed.
     {
-        // --- Child ViewModels / Managers ---
-        public DeviceSelectorViewModel DeviceSelector { get; }
-        public PresetManagerViewModel PresetManager { get; }
+        public string Name { get; set; } = "";
+        public DisplayOrientation Value { get; set; }
+        public override bool Equals(object? obj) => obj is DisplayOrientationItem item && Value == item.Value;
+        public override int GetHashCode() => Value.GetHashCode();
 
-        // --- Services ---
-        private readonly IDisplayInfoService _infoService; // Still needed for loading details
-        private readonly IDisplayScaleService _scaleService; // Still needed for loading details
-        private readonly IDisplaySettingsApplicator _applicator; // Use the applicator service
+        // Basic INPC implementation if needed
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    }
+
+    public class DisplaySettingsViewModel : INotifyPropertyChanged, IDisposable // Added IDisposable for cleanup
+    {
+        // --- Injected Dependencies ---
+        private readonly IDisplayInfoService _infoService;
+        private readonly IDisplayScaleService _scaleService;
+        private readonly IDisplaySettingsApplicator _applicator;
+        private readonly ILogger<DisplaySettingsViewModel> _logger; // Use real logger
+        public DeviceSelectorViewModel DeviceSelector { get; } // Keep public for binding
+        public PresetManagerViewModel PresetManager { get; }   // Keep public for binding
 
         // --- State specific to the selected device's *details* ---
         public ObservableCollection<DisplayModeInfo> Resolutions { get; } = new();
         public ObservableCollection<int> RefreshRates { get; } = new();
         public ObservableCollection<DisplayOrientationItem> AvailableOrientations { get; } = new();
-        
+
         private DisplayModeInfo? _selectedResolution;
         public DisplayModeInfo? SelectedResolution
         {
             get => _selectedResolution;
-            set
-            {
-                // Use SetProperty helper for brevity and INotifyPropertyChanged
-                // Pass an Action lambda to call our new update method AFTER the property changes
-                SetProperty(ref _selectedResolution, value, () =>
-                {
-                    UpdateRefreshRatesAndCommands(); // Update refresh rates first
-                    UpdateDpiRangeForResolution(value); // THEN update DPI range
-                });
-            }
+            set { SetProperty(ref _selectedResolution, value, OnResolutionChanged); } // Use specific handler
         }
+
         private int _selectedRefreshRate;
         public int SelectedRefreshRate
         {
             get => _selectedRefreshRate;
-            set
-            {
-                SetProperty(ref _selectedRefreshRate, value,
-                    () => (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged());
-            } // Only update Apply command state
+            set { SetProperty(ref _selectedRefreshRate, value, UpdateCommandsForCurrentSettings); }
         }
+
+         private DisplayOrientationItem? _selectedOrientation;
+         public DisplayOrientationItem? SelectedOrientation
+         {
+             get => _selectedOrientation;
+             set { SetProperty(ref _selectedOrientation, value, UpdateCommandsForCurrentSettings); }
+         }
+
         private uint _dpi = 100;
-        
-        private DisplayOrientationItem? _selectedOrientation;
-        public DisplayOrientationItem? SelectedOrientation
-        {
-            get => _selectedOrientation;
-            // Update Apply command when selection changes
-            set { SetProperty(ref _selectedOrientation, value, () => (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged()); }
-        }
-        
         public uint Dpi
         {
             get => _dpi;
             set
             {
-                // Clamp against the *current* Min/Max values stored in the properties
                 uint clampedValue = Math.Clamp(value, MinDpi, MaxDpi);
-                SetProperty(ref _dpi, clampedValue, () => (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged());
+                SetProperty(ref _dpi, clampedValue, UpdateCommandsForCurrentSettings);
             }
         }
 
         private uint _minDpi = 100;
-        public uint MinDpi
-        {
-            get => _minDpi;
-            private set => SetProperty(ref _minDpi, value);
-        }
+        public uint MinDpi { get => _minDpi; private set => SetProperty(ref _minDpi, value); }
 
         private uint _maxDpi = 200;
-        public uint MaxDpi
-        {
-            get => _maxDpi;
-            private set => SetProperty(ref _maxDpi, value);
-        }
-
+        public uint MaxDpi { get => _maxDpi; private set => SetProperty(ref _maxDpi, value); }
 
         // --- Header Display Properties ---
         private string? _headerDisplayName;
-
-        public string? HeaderDisplayName
-        {
-            get => _headerDisplayName;
-            private set => SetProperty(ref _headerDisplayName, value);
-        }
+        public string? HeaderDisplayName { get => _headerDisplayName; private set => SetProperty(ref _headerDisplayName, value); }
 
         private string? _headerDisplayParameters;
-
-        public string? HeaderDisplayParameters
-        {
-            get => _headerDisplayParameters;
-            private set => SetProperty(ref _headerDisplayParameters, value);
-        }
+        public string? HeaderDisplayParameters { get => _headerDisplayParameters; private set => SetProperty(ref _headerDisplayParameters, value); }
 
         private string? _headerDeviceString;
-
-        public string? HeaderDeviceString
-        {
-            get => _headerDeviceString;
-            private set => SetProperty(ref _headerDeviceString, value);
-        }
+        public string? HeaderDeviceString { get => _headerDeviceString; private set => SetProperty(ref _headerDeviceString, value); }
 
         private Brush _statusColor = Brushes.Gray;
-
-        public Brush StatusColor
-        {
-            get => _statusColor;
-            private set => SetProperty(ref _statusColor, value);
-        }
+        public Brush StatusColor { get => _statusColor; private set => SetProperty(ref _statusColor, value); }
 
         // --- Commands (Coordination) ---
         public ICommand ApplyCommand { get; }
         public ICommand SavePresetCommand { get; }
         public ICommand ApplyPresetCommand { get; }
         public ICommand RestoreDefaultCommand { get; }
-        // Identify command is now likely on DeviceSelectorViewModel
 
 
-        // --- Constructor ---
+        // --- Constructor (Inject Dependencies) ---
         public DisplaySettingsViewModel(
-            DeviceSelectorViewModel deviceSelector, // Inject child VMs/Managers
+            DeviceSelectorViewModel deviceSelector,
             PresetManagerViewModel presetManager,
             IDisplayInfoService infoService,
             IDisplayScaleService scaleService,
-            IDisplaySettingsApplicator applicator)
+            IDisplaySettingsApplicator applicator,
+            ILogger<DisplaySettingsViewModel> logger) // Inject logger
         {
+            // Assign injected dependencies
             DeviceSelector = deviceSelector ?? throw new ArgumentNullException(nameof(deviceSelector));
             PresetManager = presetManager ?? throw new ArgumentNullException(nameof(presetManager));
             _infoService = infoService ?? throw new ArgumentNullException(nameof(infoService));
             _scaleService = scaleService ?? throw new ArgumentNullException(nameof(scaleService));
             _applicator = applicator ?? throw new ArgumentNullException(nameof(applicator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger)); // Assign logger
+
+            _logger.LogInformation("DisplaySettingsViewModel initializing...");
 
             // Subscribe to device selection changes
             DeviceSelector.PropertyChanged += DeviceSelector_PropertyChanged;
@@ -155,369 +128,283 @@ namespace BorderlessWindowApp.ViewModels.Display
             SavePresetCommand = new RelayCommand(async () => await SavePresetAsync(), CanSavePreset);
             ApplyPresetCommand = new RelayCommand(async () => await ApplyPresetAsync(), CanApplyPreset);
             RestoreDefaultCommand = new RelayCommand(RestoreDefault, CanRestoreDefault);
-            // Populate orientation options (could also be done in LoadDetails)
+
+            // Populate static options
             PopulateOrientationOptions();
+
             // Initial Load (delegated)
             _ = LoadInitialDataAsync();
+             _logger.LogInformation("DisplaySettingsViewModel initialized.");
         }
 
 
         // --- Initialization and Event Handling ---
         private async Task LoadInitialDataAsync()
         {
-            await PresetManager.LoadPresetsAsync(); // Load presets via manager
-            DeviceSelector.LoadDeviceList(); // Load devices via selector
-            // Device change handler will load initial details if a device is selected
+             _logger.LogInformation("Loading initial data...");
+             // Use try-catch for robustness
+             try
+             {
+                 await PresetManager.LoadPresetsAsync(); // Load presets via manager
+                 DeviceSelector.LoadDeviceList();         // Load devices via selector
+                 // Device change handler will load initial details if a device is selected
+                 _logger.LogInformation("Initial data loading complete.");
+             }
+             catch (Exception ex)
+             {
+                 _logger.LogError(ex, "Error during initial data loading.");
+                 // TODO: Show error to user
+                 UpdateStatusColor(true); // Indicate error
+             }
         }
-        
-        private void PopulateOrientationOptions()
-        {
-            AvailableOrientations.Clear();
-            AvailableOrientations.Add(new DisplayOrientationItem { Name = "Landscape", Value = DisplayOrientation.Landscape });
-            AvailableOrientations.Add(new DisplayOrientationItem { Name = "Portrait", Value = DisplayOrientation.Portrait });
-            AvailableOrientations.Add(new DisplayOrientationItem { Name = "Landscape (flipped)", Value = DisplayOrientation.LandscapeFlipped });
-            AvailableOrientations.Add(new DisplayOrientationItem { Name = "Portrait (flipped)", Value = DisplayOrientation.PortraitFlipped });
-        }
-        
+
+         private void PopulateOrientationOptions()
+         {
+             AvailableOrientations.Clear();
+             AvailableOrientations.Add(new DisplayOrientationItem { Name = "Landscape", Value = DisplayOrientation.Landscape });
+             AvailableOrientations.Add(new DisplayOrientationItem { Name = "Portrait", Value = DisplayOrientation.Portrait });
+             AvailableOrientations.Add(new DisplayOrientationItem { Name = "Landscape (flipped)", Value = DisplayOrientation.LandscapeFlipped });
+             AvailableOrientations.Add(new DisplayOrientationItem { Name = "Portrait (flipped)", Value = DisplayOrientation.PortraitFlipped });
+         }
+
+        // Handles changes from DeviceSelectorViewModel
         private void DeviceSelector_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(DeviceSelectorViewModel.SelectedDevice))
             {
-                // When device changes, load details AND re-evaluate commands depending on device selection
-                LoadDisplayDetailsForSelectedDevice(); // This already calls RaiseCanExecuteChanged on commands inside it or via SetProperty
-                // Explicitly raise for ApplyPresetCommand as well, as its CanExecute depends on both device and preset
+                _logger.LogDebug("SelectedDevice changed, reloading details and updating commands.");
+                LoadDisplayDetailsForSelectedDevice(); // Reload details for new device
+                // Explicitly update commands that depend on SelectedDevice
                 (ApplyPresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
-                (RestoreDefaultCommand as RelayCommand)?.RaiseCanExecuteChanged(); // Re-evaluate Restore command
-                (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged(); // Re-evaluate Apply command
-                (SavePresetCommand as RelayCommand)?.RaiseCanExecuteChanged();// Re-evaluate Save command
+                (RestoreDefaultCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                // Apply/Save commands are implicitly updated by LoadDisplayDetails via SetProperty/OnResolutionChanged
             }
         }
 
+        // Handles changes from PresetManagerViewModel
         private void PresetManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(PresetManagerViewModel.SelectedPreset))
             {
-                // When selected preset changes, re-evaluate commands depending on preset selection
+                 _logger.LogDebug("SelectedPreset changed, updating ApplyPresetCommand state.");
+                // Update commands that depend on SelectedPreset
                 (ApplyPresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
-                // Note: DeletePresetCommand is inside PresetManagerViewModel, it handles its own CanExecute update.
             }
         }
-        
-        
 
-        // --- Core Logic Methods (Simplified) ---
+        // --- Core Logic Methods ---
 
         private void LoadDisplayDetailsForSelectedDevice()
         {
-            var device = DeviceSelector.SelectedDevice; // Get from selector
+            var device = DeviceSelector.SelectedDevice;
+            _logger.LogDebug("Loading details for device: {DeviceName}", device?.FriendlyName ?? "None");
 
-            // Clear/reset state if no device
             if (device?.DeviceName == null)
             {
-                HeaderDisplayName = "No Device Selected";
-                HeaderDisplayParameters = null;
-                HeaderDeviceString = null;
-                Resolutions.Clear();
-                RefreshRates.Clear();
-                SelectedResolution = null; // This will clear RefreshRates via setter chain
-                Dpi = 100;
-                MinDpi = 100;
-                MaxDpi = 100;
+                // Reset state when no device is selected
+                 _logger.LogDebug("No device selected, resetting details.");
+                HeaderDisplayName = "No Device Selected"; HeaderDisplayParameters = null; HeaderDeviceString = null;
+                Resolutions.Clear(); RefreshRates.Clear();
+                // Setting SelectedResolution to null triggers OnResolutionChanged which clears rates and updates commands
+                SelectedResolution = null;
+                // Reset DPI separately
+                MinDpi = 100; MaxDpi = 100; Dpi = 100;
+                SelectedOrientation = null;
                 UpdateStatusColor();
-                UpdateDpiRangeForResolution(null);
                 return;
             }
 
             bool success = true;
-            // Update Header
-            HeaderDisplayName = FormatHeaderDisplayName(device); // Use helper
+            HeaderDisplayName = FormatHeaderDisplayName(device); // Use helper (marked TODO below)
             HeaderDeviceString = device.DeviceString ?? "N/A";
 
-            // Load Resolutions
-            try
-            {
-                Resolutions.Clear();
-                var modes = _infoService.GetSupportedModes(device.DeviceName);
-                foreach (var mode in modes.DistinctBy(m => new { m.Width, m.Height }).OrderByDescending(m => m.Width)
-                             .ThenByDescending(m => m.Height))
-                {
-                    Resolutions.Add(mode);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading supported modes for {device.FriendlyName}: {ex.Message}");
-                success = false;
-            }
+            // --- Load Data (Wrap service calls in try-catch) ---
+            DisplayModeInfo? currentMode = null;
+            DpiScalingInfo currentScaling = new() { Minimum = 100, Maximum = 200, Current = 100 }; // Safe defaults
+            List<DisplayModeInfo> modes = new();
 
-            // Get Current Mode/Scaling
-            DisplayModeInfo? currentMode = null; DpiScalingInfo currentScaling = new();
-            try
-            {
-                currentMode = _infoService.GetCurrentMode(device.DeviceName);
-                currentScaling = _scaleService.GetScalingInfo(device.AdapterId, device.SourceId);
-                if (!currentScaling.IsInitialized)
-                {
-                    Console.WriteLine($"Warning: Scaling info not initialized for {device.FriendlyName}");
-                    // Keep default scaling values (100)
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting current mode/scaling for {device.FriendlyName}: {ex.Message}");
-                success = false;
-            }
+            try { modes = _infoService.GetSupportedModes(device.DeviceName)?.ToList() ?? new List<DisplayModeInfo>(); }
+            catch (Exception ex) { _logger.LogError(ex, "Error loading supported modes for {Device}", device.FriendlyName); success = false; }
 
-            // Update Header Parameters (Actual)
-            string currentResStr = (currentMode != null) ? $"{currentMode.Width}x{currentMode.Height}" : "N/A";
-            string currentRateStr = (currentMode != null) ? $"{currentMode.RefreshRate}Hz" : "N/A";
-            string currentDpiStr = $"{currentScaling.Current}% DPI";
-            HeaderDisplayParameters = $"{currentResStr}, {currentRateStr}, {currentDpiStr}";
+            try { currentMode = _infoService.GetCurrentMode(device.DeviceName); }
+            catch (Exception ex) { _logger.LogError(ex, "Error getting current mode for {Device}", device.FriendlyName); success = false; }
+
+            try { currentScaling = _scaleService.GetScalingInfo(device.AdapterId, device.SourceId); if (!currentScaling.IsInitialized) _logger.LogWarning("Scaling info not initialized for {Device}", device.FriendlyName); }
+            catch (Exception ex) { _logger.LogError(ex, "Error getting scaling info for {Device}", device.FriendlyName); success = false; }
+
+            // Update Header Parameters (Based on loaded actual values)
+             string currentResStr = (currentMode != null) ? $"{currentMode.Width}x{currentMode.Height}" : "N/A";
+             string currentRateStr = (currentMode != null) ? $"{currentMode.RefreshRate}Hz" : "N/A";
+             string currentDpiStr = $"{currentScaling.Current}% DPI";
+             HeaderDisplayParameters = $"{currentResStr}, {currentRateStr}, {currentDpiStr}";
+
 
             // --- Set UI Selections ---
-            // 1. Set Resolution (this will trigger UpdateDpiRangeForResolution via setter)
-            var initialResolution = Resolutions.FirstOrDefault(m =>
-                                        currentMode != null && m.Width == currentMode.Width &&
-                                        m.Height == currentMode.Height)
-                                    ?? Resolutions.FirstOrDefault();
-            SelectedResolution = initialResolution; // This triggers UpdateRefreshRatesAndCommands
-            OnPropertyChanged(nameof(SelectedResolution)); // Notify UI
-            SelectedOrientation = AvailableOrientations.FirstOrDefault(o => o.Value == currentMode?.Orientation);
-            
-            // 2. Update Refresh Rates based on the just-set resolution
-            UpdateRefreshRatesForSelectedResolution(currentMode?.RefreshRate); // Pass current rate
-            // 3. Update DPI Range based on the just-set resolution
-            UpdateDpiRangeForResolution(initialResolution); 
+            // 1. Populate Resolutions List (use loaded modes)
+             Resolutions.Clear();
+             foreach (var mode in modes.DistinctBy(m => new { m.Width, m.Height }).OrderByDescending(m => m.Width).ThenByDescending(m => m.Height))
+             {
+                 Resolutions.Add(mode);
+             }
 
-            // Set DPI Slider and Range (do this *after* SelectedResolution triggers updates)
-            Dpi = currentScaling.Current;
-            
-            // Now set the refresh rate based on the potentially just-set resolution and actual current rate
-            if (SelectedResolution == initialResolution && currentMode != null)
-            {
-                UpdateRefreshRatesForSelectedResolution(currentMode.RefreshRate);
-            }
-            // If SelectedResolution changed, its setter already called UpdateRefreshRates
+            // 2. Set Selected Resolution (this triggers OnResolutionChanged)
+             var initialResolution = Resolutions.FirstOrDefault(m => currentMode != null && m.Width == currentMode.Width && m.Height == currentMode.Height) ?? Resolutions.FirstOrDefault();
+             SelectedResolution = initialResolution; // This triggers refresh rate and DPI range updates via OnResolutionChanged
+
+             // 3. Set Selected Orientation based on actual current orientation
+             SelectedOrientation = AvailableOrientations.FirstOrDefault(o => currentMode != null && o.Value == currentMode.Orientation);
+
+             // 4. Set Dpi value (let setter clamp based on range set by resolution change)
+             Dpi = currentScaling.Current;
+
+             // 5. Set Refresh Rate (must happen *after* SelectedResolution is set and RefreshRates list is populated)
+             if (currentMode != null && SelectedResolution == initialResolution)
+             {
+                 // If resolution matched current, try to select current rate
+                  UpdateRefreshRatesForSelectedResolution(currentMode.RefreshRate);
+             }
+             // If resolution didn't match current (or current was null),
+             // OnResolutionChanged->UpdateRefreshRatesAndCommands->UpdateRefreshRatesForSelectedResolution
+             // already set the default refresh rate.
+
 
             UpdateStatusColor(!success);
-            // Ensure commands re-evaluate after loading all details
-            (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            (SavePresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            (ApplyPresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            (RestoreDefaultCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            // Commands are updated via SetProperty/OnResolutionChanged, no explicit RaiseCanExecuteChanged needed here anymore.
         }
 
-        // Update refresh rates AND relevant command states
+        // Called when SelectedResolution changes
+        private void OnResolutionChanged()
+        {
+            _logger.LogDebug("SelectedResolution changed, updating RefreshRates, DPI Range, and Commands.");
+            UpdateRefreshRatesAndCommands(); // Update refresh rates list and dependent commands
+            UpdateDpiRangeForResolution(SelectedResolution); // Update DPI range based on new resolution
+        }
+
+        // Updates refresh rate list AND dependent command states
         private void UpdateRefreshRatesAndCommands()
         {
-            UpdateRefreshRatesForSelectedResolution();
-            (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            (SavePresetCommand as RelayCommand)?.RaiseCanExecuteChanged(); // Save preset depends on valid Res/Rate
+            UpdateRefreshRatesForSelectedResolution(); // Update list and selection
+            UpdateCommandsForCurrentSettings(); // Update command states based on current selections
         }
 
+        // Updates refresh rate list and selects appropriate rate
         private void UpdateRefreshRatesForSelectedResolution(int? targetRefreshRate = null)
         {
-            var device = DeviceSelector.SelectedDevice;
-            if (SelectedResolution == null || device?.DeviceName == null)
-            {
-                RefreshRates.Clear();
-                SelectedRefreshRate = 0;
-                return;
-            }
-
-            // ... (Logic to populate RefreshRates based on SelectedResolution and device) ...
-            RefreshRates.Clear();
-            var supportedRates = _infoService.GetSupportedModes(device.DeviceName)
-                .Where(m => m.Width == SelectedResolution.Width && m.Height == SelectedResolution.Height)
-                .Select(m => m.RefreshRate).Distinct().OrderBy(r => r);
-            foreach (var rate in supportedRates) RefreshRates.Add(rate);
-
-            // ... (Set SelectedRefreshRate based on targetRefreshRate or default) ...
-            SelectedRefreshRate = RefreshRates.Contains(targetRefreshRate ?? _selectedRefreshRate)
-                ? (targetRefreshRate ?? _selectedRefreshRate)
-                : RefreshRates.FirstOrDefault();
+             // TODO: Implementation as before (uses DeviceSelector.SelectedDevice, SelectedResolution)
+             // Populates RefreshRates collection and sets SelectedRefreshRate
+             var device = DeviceSelector.SelectedDevice;
+             if (SelectedResolution == null || device?.DeviceName == null)
+             {
+                 RefreshRates.Clear(); SelectedRefreshRate = 0; return;
+             }
+             try
+             {
+                 RefreshRates.Clear();
+                 var supportedRates = _infoService.GetSupportedModes(device.DeviceName)
+                     .Where(m => m.Width == SelectedResolution.Width && m.Height == SelectedResolution.Height)
+                     .Select(m => m.RefreshRate).Distinct().OrderBy(r => r);
+                 foreach (var rate in supportedRates) RefreshRates.Add(rate);
+                 SelectedRefreshRate = RefreshRates.Contains(targetRefreshRate ?? _selectedRefreshRate) ? (targetRefreshRate ?? _selectedRefreshRate) : RefreshRates.FirstOrDefault();
+             }
+             catch (Exception ex) { _logger.LogError(ex, "Error updating refresh rates for {Res}", SelectedResolution); RefreshRates.Clear(); SelectedRefreshRate = 0; }
         }
 
-        // --- NEW: Method to update DPI range ---
+        // Updates DPI range based on resolution
         private void UpdateDpiRangeForResolution(DisplayModeInfo? newResolution)
         {
-            uint newMinDpi = 100; // Assuming minimum is always 100
-            uint newMaxDpi;
-
-            if (newResolution == null || newResolution.Height <= 0)
-            {
-                newMaxDpi = 200; // Default max
-            }
-            else
-            {
-                newMaxDpi = EstimateMaxDpiForHeight(newResolution.Height);
-            }
-
-            // --- Refined Update Logic ---
-            // Store the current value *before* changing the range
-            uint currentDpiValue = _dpi;
-
-            // 1. Update the range properties. SetProperty will notify the UI.
-            //    It's important that these notifications happen *before* we potentially set Dpi again.
-            MinDpi = newMinDpi;
-            MaxDpi = newMaxDpi;
-
-            // 2. Calculate the clamped value based on the *original* value and the *new* range.
-            uint clampedDpi = Math.Clamp(currentDpiValue, newMinDpi, newMaxDpi);
-
-            // 3. Set the Dpi property using the calculated clamped value.
-            //    This ensures that even if the original value was within the new range,
-            //    a PropertyChanged notification for Dpi is sent *after* Min/Max have changed,
-            //    which might help the Slider sync up.
-            Dpi = clampedDpi;
-            // --- End Refined Update Logic ---
-
-
-            System.Diagnostics.Debug.WriteLine($"DPI Range updated for H={newResolution?.Height}: Min={MinDpi}, Max={MaxDpi}, Current DPI set to/remains {Dpi}");
+            // TODO: Implementation as before (estimates MaxDpi, sets MinDpi/MaxDpi, clamps Dpi)
+             uint newMinDpi = 100; uint newMaxDpi;
+             if (newResolution == null || newResolution.Height <= 0) { newMaxDpi = 200; }
+             else { newMaxDpi = EstimateMaxDpiForHeight(newResolution.Height); }
+             uint currentDpiValue = _dpi;
+             MinDpi = newMinDpi; MaxDpi = newMaxDpi;
+             Dpi = Math.Clamp(currentDpiValue, newMinDpi, newMaxDpi); // Let Dpi setter handle clamp and notify
         }
-        
+
+        // Updates command states based on current selections
+        private void UpdateCommandsForCurrentSettings()
+        {
+             (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged();
+             (SavePresetCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        }
+
+
         // --- Command Implementations (Delegating) ---
-        
-        private bool CanApplySettings() => DeviceSelector.SelectedDevice != null && SelectedResolution != null &&
-                                           SelectedRefreshRate > 0;
+
+        private bool CanApplySettings() => DeviceSelector.SelectedDevice != null && SelectedResolution != null && SelectedRefreshRate > 0 && SelectedOrientation != null;
         private async Task ApplySettingsAsync()
         {
-            // Use SelectedOrientation.Value when calling applicator
-            if (!CanApplySettings()) return;
-            var device = DeviceSelector.SelectedDevice!;
-            var resolution = SelectedResolution!;
-            var orientation = SelectedOrientation!.Value; // Get enum value
-
-            Console.WriteLine($"MainVM: Applying settings to {device.FriendlyName}: {resolution.Width}x{resolution.Height}, {SelectedRefreshRate}Hz, {Dpi}%, {orientation}");
-
-            var request = new DisplayConfigRequest
-            {
-                DeviceName = device.DeviceName!,
-                Width = resolution.Width,
-                Height = resolution.Height,
-                RefreshRate = SelectedRefreshRate,
-                Orientation = orientation // Set the orientation in the request
-                // Position, Primary etc. could also be set here if needed
-            };
-            
-            // Applicator needs modification
-            bool success = await _applicator.ApplySettingsAsync(device,request,Dpi); 
-
-            if (success) {
-                Console.WriteLine("MainVM: ApplySettings success. Reloading details...");
-                LoadDisplayDetailsForSelectedDevice(); // Reload to reflect actual state
-            } else {
-                Console.WriteLine("MainVM: ApplySettings failed.");
-                UpdateStatusColor(true);
-            }
+             if (!CanApplySettings()) return;
+             var device = DeviceSelector.SelectedDevice!; var resolution = SelectedResolution!; var orientation = SelectedOrientation!.Value;
+             _logger.LogInformation("Executing ApplySettings command...");
+             // Create request object
+             var request = new DisplayConfigRequest { /* ... populate W, H, Rate, Orientation ... */ DeviceName = device.DeviceName!, Width=resolution.Width, Height=resolution.Height, RefreshRate=SelectedRefreshRate, Orientation=orientation, BitDepth=32}; // Example BitDepth
+             // Call applicator
+             bool success = await _applicator.ApplySettingsAsync(device, request, Dpi);
+             // Handle result
+             if (success) { _logger.LogInformation("Apply settings successful."); LoadDisplayDetailsForSelectedDevice(); }
+             else { _logger.LogWarning("Apply settings failed."); UpdateStatusColor(true); /* TODO: Notify User */ }
         }
 
-        private bool CanSavePreset()
-        {
-            // Also need an orientation selected to save it
-            return DeviceSelector.SelectedDevice != null &&
-                   SelectedResolution != null &&
-                   SelectedRefreshRate > 0 &&
-                   SelectedOrientation != null; // Ensure orientation is selected
-        }
 
+        private bool CanSavePreset() => DeviceSelector.SelectedDevice != null && SelectedResolution != null && SelectedRefreshRate > 0 && SelectedOrientation != null;
         private async Task SavePresetAsync()
         {
-            // Use CanSavePreset check which now includes orientation
-            if (!CanSavePreset()) return;
-
-            // Create a temporary preset with the current values including orientation
-            var presetValues = new DisplayPreset
-            {
-                Width = SelectedResolution!.Width, // Null checks done in CanSavePreset
-                Height = SelectedResolution.Height,
-                RefreshRate = SelectedRefreshRate,
-                Dpi = Dpi,
-                Orientation = SelectedOrientation!.Value // Get selected orientation value
-            };
-
-            // Check if preset with these exact values (including orientation) already exists
-            if (PresetManager.PresetExists(presetValues))
-            {
-                Console.WriteLine("Preset with these exact settings (including orientation) already exists.");
-                // TODO: Inform user
-                return;
-            }
-
-            // TODO: Get name from user
-            string presetName = $"Preset {PresetManager.Presets.Count + 1}";
-            presetValues.Name = presetName; // Assign the actual name
-
-            // Call PresetManager to add and save
-            bool success = await PresetManager.AddAndSavePresetAsync(presetValues);
-            if (success)
-            {
-                PresetManager.SelectedPreset = presetValues; // Select the new preset
-            }
-            else
-            {
-                // TODO: Inform user save failed
-            }
+             if (!CanSavePreset()) return;
+             _logger.LogInformation("Executing SavePreset command...");
+             // Create preset object
+             var presetValues = new DisplayPreset { /* ... populate W, H, Rate, DPI, Orientation ... */ Width=SelectedResolution!.Width, Height=SelectedResolution.Height, RefreshRate=SelectedRefreshRate, Dpi=Dpi, Orientation=SelectedOrientation!.Value };
+             // Check existence via manager
+             if (PresetManager.PresetExists(presetValues)) { _logger.LogWarning("Preset already exists."); /* TODO: Notify User */ return; }
+             // Get name (TODO: Implement user input dialog)
+             string presetName = $"Preset {PresetManager.Presets.Count + 1}"; // Placeholder
+             presetValues.Name = presetName;
+             // Add via manager
+             bool success = await PresetManager.AddAndSavePresetAsync(presetValues);
+             if (success) { _logger.LogInformation("Preset '{PresetName}' saved.", presetName); PresetManager.SelectedPreset = presetValues; }
+             else { _logger.LogWarning("Failed to save preset '{PresetName}'.", presetName); /* TODO: Notify User */ }
         }
+
 
         private bool CanApplyPreset() => PresetManager.SelectedPreset != null && DeviceSelector.SelectedDevice != null;
-
-        // Inside DisplaySettingsViewModel class
-        private async Task ApplyPresetAsync() // <--- Should be parameterless!
+        private async Task ApplyPresetAsync()
         {
-            // 1. Check if command can execute (redundant check, but safe)
-            if (!CanApplyPreset()) return;
-
-            // 2. Get the required parameters from child VMs/properties
-            var device = DeviceSelector.SelectedDevice;
-            var preset = PresetManager.SelectedPreset;
-
-            // Defensive check (although CanApplyPreset should cover this)
-            if (device == null || preset == null)
-            {
-                Console.WriteLine("ApplyPresetAsync: Device or Preset is null when trying to apply."); // Assuming _logger exists
-                return;
-            }
-
-            // 3. Call the Applicator service's method, passing the parameters
-            Console.WriteLine("ApplyPresetAsync: Calling applicator service..."); // Assuming _logger exists
-            bool success = await _applicator.ApplyPresetAsync(device, preset); // This call requires 2 parameters
-
-            // 4. Handle the result
-            if (success)
-            {
-                Console.WriteLine("MainVM: ApplyPreset success. Reloading details...");
-                LoadDisplayDetailsForSelectedDevice(); // Reload to reflect actual state
-            }
-            else
-            {
-                Console.WriteLine("MainVM: ApplyPreset failed (or incompatible).");
-                UpdateStatusColor(true);
-                // TODO: Notify User
-            }
+             if (!CanApplyPreset()) return;
+             var device = DeviceSelector.SelectedDevice!; var preset = PresetManager.SelectedPreset!;
+             _logger.LogInformation("Executing ApplyPreset command for preset '{PresetName}'...", preset.Name);
+             // Call applicator
+             bool success = await _applicator.ApplyPresetAsync(device, preset);
+             // Handle result
+             if (success) { _logger.LogInformation("Apply preset successful."); LoadDisplayDetailsForSelectedDevice(); }
+             else { _logger.LogWarning("Apply preset failed."); UpdateStatusColor(true); /* TODO: Notify User */ }
         }
+
 
         private bool CanRestoreDefault() => DeviceSelector.SelectedDevice != null;
-
         private void RestoreDefault()
         {
-            Console.WriteLine("MainVM: RestoreDefault command executed.");
+            _logger.LogInformation("Executing RestoreDefault command...");
             LoadDisplayDetailsForSelectedDevice(); // Just reload current settings
         }
-        
+
+
         private void UpdateStatusColor(bool error = false)
         {
-            StatusColor = Brushes.LimeGreen; // 正常
+            // TODO: Implementation as before (check SelectedDevice.IsAvailable, error flag)
+             var device = DeviceSelector.SelectedDevice;
+             if (error) StatusColor = Brushes.Red;
+             else if (device == null) StatusColor = Brushes.Gray;
+             else if (!device.IsAvailable) StatusColor = Brushes.Orange; // Assuming IsAvailable exists
+             else StatusColor = Brushes.LimeGreen;
         }
 
 
-        // --- Formatting Helpers (Move to Utils or Display) ---
+        // --- Formatting Helpers ---
         private string FormatHeaderDisplayName(DisplayDeviceInfo deviceInfo)
         {
             /* ... */
             return $"[{deviceInfo.SourceId}] {deviceInfo.FriendlyName ?? "Unknown"} ({FormatOutputTechnology(deviceInfo.OutputTechnology)})";
         }
-
         private string FormatOutputTechnology(DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY tech)
         {
             // Remove the prefix and handle specific cases
@@ -547,37 +434,6 @@ namespace BorderlessWindowApp.ViewModels.Display
                     return name; // Return cleaned name or original if no underscore
             }
         }
-
-        // --- INotifyPropertyChanged Implementation ---
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            
-            // Command CanExecute updates
-            if (propertyName == nameof(SelectedResolution) ||
-                propertyName == nameof(SelectedRefreshRate) ||
-                propertyName == nameof(Dpi) ||
-                propertyName == nameof(SelectedOrientation)) // Add Orientation change check
-            {
-                (ApplyCommand as RelayCommand)?.RaiseCanExecuteChanged();
-                (SavePresetCommand as RelayCommand)?.RaiseCanExecuteChanged(); // Save command depends on orientation now
-            }
-        }
-
-        // Helper to reduce boilerplate
-        protected bool SetProperty<T>(ref T field, T value, Action? onChanged = null,
-            [CallerMemberName] string? propertyName = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(propertyName);
-            onChanged?.Invoke();
-            return true;
-        }
-        
-        // Helper function to estimate MaxDPI based on height ---
         private static uint EstimateMaxDpiForHeight(int height)
         {
             if (height <= 0) return 100; // Default or minimum
@@ -589,16 +445,48 @@ namespace BorderlessWindowApp.ViewModels.Display
             // Ensure minimum is at least 100
             return Math.Max(100, roundedMaxDpi);
         }
-        
-        // Helper class for ComboBox display
-        public class DisplayOrientationItem
+
+
+        // --- INotifyPropertyChanged Implementation ---
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
-            public string Name { get; set; } = "";
-            public DisplayOrientation Value { get; set; }
-            // Optional: Override Equals/GetHashCode if needed for SelectedItem comparison
-            public override bool Equals(object? obj) => obj is DisplayOrientationItem item && Value == item.Value;
-            public override int GetHashCode() => Value.GetHashCode();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            // No command updates needed here - handled by SetProperty/Event Handlers/Specific methods
         }
-        
-    }
-}
+        protected bool SetProperty<T>(ref T field, T value, Action? onChanged = null, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            onChanged?.Invoke(); // Execute associated action
+            return true;
+        }
+
+        // --- IDisposable (Optional but good practice for event unsubscription) ---
+         private bool _disposed = false;
+         public void Dispose()
+         {
+             Dispose(true);
+             GC.SuppressFinalize(this);
+         }
+
+         protected virtual void Dispose(bool disposing)
+         {
+             if (!_disposed)
+             {
+                 if (disposing)
+                 {
+                     // Unsubscribe from events to prevent memory leaks
+                     DeviceSelector.PropertyChanged -= DeviceSelector_PropertyChanged;
+                     PresetManager.PropertyChanged -= PresetManager_PropertyChanged;
+                     _logger.LogInformation("DisplaySettingsViewModel disposed.");
+                 }
+                 _disposed = true;
+             }
+         }
+         // Add finalizer if dealing with unmanaged resources, though unlikely here
+         // ~DisplaySettingsViewModel() { Dispose(false); }
+
+    } // End Class
+} // End Namespace
