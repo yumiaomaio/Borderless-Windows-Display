@@ -286,6 +286,15 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+                
+                <Border Style="{StaticResource SettingsCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Apply Options" Style="{StaticResource SectionTitleStyle}"/>
+                        <CheckBox Content="Require confirmation before applying settings (5s timer)"
+                                  IsChecked="{Binding IsConfirmationRequired, Mode=TwoWay}"
+                                  Margin="0,0,0,5"/>
+                    </StackPanel>
+                </Border>
 
             </StackPanel>
         </ScrollViewer>
@@ -293,8 +302,8 @@
         <Border Grid.Row="2" Style="{StaticResource HeaderFooterCardStyle}"
                 CornerRadius="8,8,0,0" Margin="10,5,27,10" Padding="8">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="🔄 恢复默认" Style="{StaticResource SecondaryButtonStyle}"
-                        Command="{Binding RestoreDefaultCommand}" />
+                <Button Content="↩️ Revert Changes" Style="{StaticResource SecondaryButtonStyle}"
+                        Command="{Binding RevertChangesCommand}" />
                 <Button Content="✅ 应用配置" Style="{StaticResource StandardButtonStyle}"
                         Command="{Binding ApplyCommand}" />
             </StackPanel>

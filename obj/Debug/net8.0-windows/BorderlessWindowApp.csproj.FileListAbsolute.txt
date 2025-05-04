@@ -65,3 +65,5 @@ C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Views\DisplayPopupWindow.g.cs
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Views\DisplaySettingsView.g.cs
 C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Views\DisplaySettingsView.baml
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Views\ConfirmationDialog.baml
+C:\Users\luokeke\Music\RiderProjects\BorderlessWindowApp\BorderlessWindowApp\obj\Debug\net8.0-windows\Views\ConfirmationDialog.g.cs
